@@ -1,0 +1,11 @@
+{
+    "name": "Little Meow Programming Assistant",
+    "description":"Little Meow Programming Assistant",
+    "activitybar.main.name": "Little Meow",
+    "activitybar.main.view.name": "Chat",
+    "view.open.chat":"Consult Little Meow",
+    "settings.model.token":"Model API Token",
+    "view.chat.clear": "Clear Chat History",
+    "view.chat.settings": "Settings",
+    "view.chat.clear.success": "Chat history cleared"
+}
