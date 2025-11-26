@@ -20,4 +20,6 @@ interface InitConfig{
     activeDocument?: string
 }
 
-declare const initConfig:InitConfig;
+interface Window{
+    initConfig: InitConfig
+}

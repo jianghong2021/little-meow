@@ -112,6 +112,18 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         })
     }
 
+    private getActiveFile(){
+        if(!vscode.window.activeTextEditor?.document.fileName){
+            return ''
+        }
+        const fileName = vscode.window.activeTextEditor.document.fileName.replaceAll(/\\/g,'/');
+        if(fileName.endsWith('\\')){
+            return fileName.substring(0,fileName.length-1)
+        }else{
+            return fileName;
+        }
+    }
+
     private getHtml(webview: vscode.Webview, message: { [k: string]: string }) {
         const cssUrl = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'assets/chat.css'));
 
@@ -153,10 +165,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         </div>
     </div>
     <script>
-        const initConfig = {
-            baseUrl: '${baseUrl}',
+        window.initConfig = {
+            baseUrl: "${baseUrl}",
             isDark: ${vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark},
-            activeDocument: '${vscode.window.activeTextEditor?.document.fileName||''}'
+            activeDocument: "${this.getActiveFile()}"
         }
     </script>
     <script src="${jsUrl}"></script>

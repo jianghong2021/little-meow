@@ -38,8 +38,8 @@ function getFileName(file: string) {
 }
 
 function onDocumentChange(file?: string) {
-    initConfig.activeDocument = file;
-    activeDocument.textContent = getFileName(initConfig.activeDocument || '');
+    window.initConfig.activeDocument = file;
+    activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 }
 
 function clearHistory() {
@@ -58,8 +58,8 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
         <div class="msg">${text}</div>
         <div class="message-footer">
             <div class="btn-icon" style="display:${msg.role == 'ai' ? 'flex' : 'none'}">
-                <img src="${initConfig.baseUrl}/copy${initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
-                <img src="${initConfig.baseUrl}/refresh${initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
+                <img src="${window.initConfig.baseUrl}/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
+                <img src="${window.initConfig.baseUrl}/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
             </div>
             <span class="message-time">${getCurrentTime(msg.date)}<span>
         </div>
@@ -89,8 +89,8 @@ function onPutMessage(msg: ChatDetails, reset = true) {
         <div class="msg">${text}</div>
         <div class="message-footer">
             <div class="btn-icon" style="display:${(msg.role == 'ai' && msg.done) ? 'flex' : 'none'}">
-                <img src="${initConfig.baseUrl}/copy${initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
-                <img src="${initConfig.baseUrl}/refresh${initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
+                <img src="${window.initConfig.baseUrl}/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
+                <img src="${window.initConfig.baseUrl}/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
             </div>
             <span class="message-time">${getCurrentTime(msg.date)}<span>
         </div>
@@ -242,7 +242,7 @@ window.addEventListener('load', () => {
 (window as any)['reSendMessage'] = reSendMessage;
 (window as any)['copyMsgContent'] = copyMsgContent;
 
-activeDocument.textContent = getFileName(initConfig.activeDocument || '');
+activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 
 chatDb.init().then(() => {
     return chatDb.getAll()

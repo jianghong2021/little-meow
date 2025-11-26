@@ -1,6 +1,6 @@
 {
     "name": "Little Meow Programming Assistant",
-    "description":"Little Meow Programming Assistant",
+    "description":"Little Meow Programming Assistant | 小喵喵编程助手",
     "activitybar.main.name": "Little Meow",
     "activitybar.main.view.name": "Chat",
     "view.open.chat":"Consult Little Meow",
