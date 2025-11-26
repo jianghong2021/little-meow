@@ -16,3 +16,7 @@
 3. [x] 自带 **Copilot** 聊天参与者，@Mycat 即可交互
 4. [ ] 与编辑器交互，快速更改代码
 5. [ ] 与终端交互，自动读取错误，配合日志修改代码
+
+### 截图
+
+<img width="400" src="https://raw.githubusercontent.com/jianghong2021/little-meow/refs/heads/main/assets/mycat.jpg"/>
