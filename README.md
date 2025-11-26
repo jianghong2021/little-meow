@@ -1,22 +1,24 @@
-# 小喵喵编程助手
-简约方便的AI编程助手
+# Little Meow Coding Assistant
+A simple and convenient AI programming assistant.
 
-当前使用 **deepseek** 官方API，需要自行去官网申请API权限 **token**，并在设置中填入token
+This extension uses the **official DeepSeek API**.  
+You need to apply for an API **token** from DeepSeek’s website and enter it in the extension settings.
 
-### 起因
-如果我说我的**Copilot**又超额度了，你信吗？deepseek 半年前充了￥10，现在还有￥9.6
+### Motivation
+If I told you my **Copilot** usage quota ran out *again*, would you believe it?  
+Meanwhile, I topped up ¥10 on DeepSeek half a year ago, and there is still ¥9.6 left.
 
-### 优势
-1. 性价比高，实惠，且对国内用户友好，Copilot 愿意付钱也支付困难
-2. 如果习惯 Copilot ，可以使用 @Mycat，保留 Copilot 界面
+### Advantages
+1. Extremely cost-effective and friendly for users in China, while paying for Copilot is often difficult.
+2. If you're used to Copilot, you can use **@Mycat**, which keeps the Copilot-style interface.
 
-### 特点
-1. [x] 自动读取当前编辑器可见范围代码片段
-2. [x] 生成代码高亮显示，一键复制
-3. [x] 自带 **Copilot** 聊天参与者，@Mycat 即可交互
-4. [ ] 与编辑器交互，快速更改代码
-5. [ ] 与终端交互，自动读取错误，配合日志修改代码
+### Features
+1. [x] Automatically reads the visible code snippet in the current editor
+2. [x] Generates highlighted code with one-click copy
+3. [x] Built-in **Copilot-style** chat participant — interact simply by mentioning **@Mycat**
+4. [ ] Editor interaction for quick code modification
+5. [ ] Terminal interaction to automatically read errors and adjust code based on logs
 
-### 截图
+### Screenshots
 
 <img width="400" src="https://raw.githubusercontent.com/jianghong2021/little-meow/refs/heads/main/assets/mycat.jpg"/>

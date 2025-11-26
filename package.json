@@ -50,7 +50,7 @@
     "chatParticipants": [
       {
         "id": "chat-my-lovely-cat",
-        "name": "MyCat",
+        "name": "mycat",
         "fullName": "%name%",
         "description": "%description%",
         "isSticky": true
