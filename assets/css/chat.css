@@ -137,6 +137,7 @@
      align-items: center;
      margin-top: 4px;
      user-select: none;
+     gap: 10px;
  }
 
  .message-footer .btn-icon {
@@ -176,7 +177,16 @@
      background: var(--bg-color);
      color: #179fff;
      font-size: 10px;
+     display: flex;
+     align-items: center;
+     gap: 3px;
  }
+
+  #activeDocument img{
+    cursor: pointer;
+    width: 13px;
+    height: 13px;
+  }
 
  #message-input {
      flex: 1;

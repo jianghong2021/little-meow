@@ -6,19 +6,23 @@
         {
             "type": "npm",
             "script": "build:cont",
-            "group": "build",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "isBackground": true,
-            "label": "build:cont",
+            "label": "npm: build:cont",
             "presentation": {
-                "group": "watch",
+                "group": "build:cont",
                 "reveal": "never"
             }
         },
 		{
             "label": "watch",
             "dependsOn": [
+                "npm: build:cont",
                 "npm: watch:tsc",
-                "npm: watch:esbuild"
+                "npm: watch:esbuild",
             ],
             "presentation": {
                 "reveal": "never"

@@ -6,6 +6,7 @@ type ChatDetailsRole = 'ai'|'user'
 
 interface ChatDetails{
     id: string
+    conversationId: string
     title: string
     done?: boolean
     content: string
@@ -18,8 +19,15 @@ interface InitConfig{
     baseUrl: string
     isDark: boolean
     activeDocument?: string
+    conversation: ConversationDetails
 }
 
 interface Window{
     initConfig: InitConfig
+}
+
+interface MessageSendArg{
+    prompt: string
+    memory: string
+    data: ChatDetails
 }

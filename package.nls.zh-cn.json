@@ -4,8 +4,11 @@
     "activitybar.main.name": "小喵喵",
     "activitybar.main.view.name": "聊天",
     "view.open.chat":"咨询小喵喵",
-    "settings.model.token":"模型API令牌token",
-    "view.chat.clear": "清除聊天记录",
+    "settings.model.token":"API令牌token",
+    "view.chat.clear": "删除聊天",
     "view.chat.settings": "设置",
-    "view.chat.clear.success": "已清除聊天记录"
+    "view.chat.clear.success": "已清除聊天",
+    "view.chat.history": "聊天记录",
+    "view.chat.new": "新聊天",
+    "view.chat.mode": "模式"
 }

@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.106.1"
   },
@@ -24,7 +24,7 @@
     "url": "https://x.com/gzhlm2025"
   },
   "publisher": "webjiangh",
-  "icon": "assets/logo.png",
+  "icon": "assets/icons/logo.png",
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
@@ -34,19 +34,39 @@
         "title": "%view.open.chat%"
       },
       {
+        "command": "my-lovely-cat.setToken",
+        "title": "%settings.model.token%"
+      },
+      {
+        "command": "my-lovely-cat.new",
+        "title": "%view.chat.new%",
+        "icon": {
+          "dark": "assets/icons/new-chat-dark.svg",
+          "light": "assets/icons/new-chat.svg"
+        }
+      },
+      {
         "command": "my-lovely-cat.settings",
         "title": "%view.chat.settings%",
         "icon": {
-          "dark": "assets/settings-dark.svg",
-          "light": "assets/settings.svg"
+          "dark": "assets/icons/settings-dark.svg",
+          "light": "assets/icons/settings.svg"
         }
       },
       {
         "command": "my-lovely-cat.clear",
         "title": "%view.chat.clear%",
         "icon": {
-          "dark": "assets/clear-dark.svg",
-          "light": "assets/clear.svg"
+          "dark": "assets/icons/clear-dark.svg",
+          "light": "assets/icons/clear.svg"
+        }
+      },
+      {
+        "command": "my-lovely-cat.history",
+        "title": "%view.chat.history%",
+        "icon": {
+          "dark": "assets/icons/history-dark.svg",
+          "light": "assets/icons/history.svg"
         }
       }
     ],
@@ -59,22 +79,12 @@
         "isSticky": true
       }
     ],
-    "configuration": {
-      "title": "%name%",
-      "properties": {
-        "my-lovely-cat.model-token": {
-          "type": "string",
-          "default": "",
-          "description": "%settings.model.token%"
-        }
-      }
-    },
     "viewsContainers": {
       "activitybar": [
         {
           "id": "chat-my-lovely-cat-view",
           "title": "%activitybar.main.name%",
-          "icon": "assets/menus.svg"
+          "icon": "assets/icons/menus.svg"
         }
       ]
     },
@@ -83,7 +93,7 @@
         {
           "id": "my-lovely-cat-view",
           "name": "%activitybar.main.view.name%",
-          "icon": "assets/menus.svg",
+          "icon": "assets/icons/menus.svg",
           "type": "webview"
         }
       ]
@@ -91,14 +101,24 @@
     "menus": {
       "view/title": [
         {
-          "command": "my-lovely-cat.clear",
+          "command": "my-lovely-cat.new",
           "when": "view == my-lovely-cat-view",
           "group": "navigation"
         },
         {
-          "command": "my-lovely-cat.settings",
+          "command": "my-lovely-cat.history",
           "when": "view == my-lovely-cat-view",
-          "group": "navigation"
+          "group": "chat"
+        },
+        {
+          "command": "my-lovely-cat.clear",
+          "when": "view == my-lovely-cat-view",
+          "group": "chat"
+        },
+        {
+          "command": "my-lovely-cat.setToken",
+          "when": "view == my-lovely-cat-view",
+          "group": "settings"
         }
       ]
     }

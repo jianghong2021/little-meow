@@ -5,8 +5,9 @@ export class CatParticipant {
     public static ID = 'chat-my-lovely-cat';
     public static model = new DeepseekModel();
     public static init(context: vscode.ExtensionContext) {
+        this.model.initConfig(context);
         const cat = vscode.chat.createChatParticipant(this.ID, this.handler.bind(this));
-        cat.iconPath = vscode.Uri.joinPath(context.extensionUri, 'assets/logo.svg');
+        cat.iconPath = vscode.Uri.joinPath(context.extensionUri, 'assets/icons/logo.svg');
     }
 
     public static async handler(

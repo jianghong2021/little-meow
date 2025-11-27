@@ -35,7 +35,7 @@ async function buildContent() {
 		sourcemap: !production,
 		sourcesContent: false,
 		platform: 'browser',
-		outfile: 'assets/chat-cont.js',
+		outfile: 'assets/js/chat-cont.js',
 		external: ['vscode'],
 		logLevel: 'silent',
 		plugins: [

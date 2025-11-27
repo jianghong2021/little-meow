@@ -3,6 +3,7 @@ import { ChatDb } from '../data/ChatDb.js';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import javascript from 'highlight.js/lib/languages/javascript';
+import { formatTimeAgo } from '../utils/date.js';
 
 const vscode = acquireVsCodeApi();
 window.addEventListener('message', onmessage);
@@ -15,11 +16,10 @@ const chatDb = new ChatDb();
 const messageInput = document.getElementById('message-input') as HTMLInputElement;
 const sendButton = document.getElementById('send-button') as HTMLButtonElement;
 const chatMessages = document.getElementById('chat-messages') as HTMLElement;
-const activeDocument = document.getElementById('activeDocument') as HTMLElement;
+const activeDocument = document.querySelector('#activeDocument span') as HTMLElement;
 
 function onmessage(e: MessageEvent) {
     const { type, data } = e.data;
-    console.log('msg', type, data)
     switch (type) {
         case 'onPutMessage':
             onPutMessage(data);
@@ -34,7 +34,8 @@ function onmessage(e: MessageEvent) {
 
 function getFileName(file: string) {
     const temp = file.split(/[\/\\]/);
-    return temp[temp.length - 1].replaceAll(/\s/g, '');
+    const fileName = temp[temp.length - 1].replaceAll(/\s/g, '');
+    return fileName.substring(fileName.length - 16)
 }
 
 function onDocumentChange(file?: string) {
@@ -43,8 +44,9 @@ function onDocumentChange(file?: string) {
 }
 
 function clearHistory() {
-    chatDb.clear();
-    chatMessages.innerHTML = '';
+    chatDb.clear(window.initConfig.conversation.id);
+
+    vscode.postMessage({ type: 'reload', data: undefined });
 }
 
 function pushMessage(msg: ChatDetails, onlyRender = false) {
@@ -58,10 +60,10 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
         <div class="msg">${text}</div>
         <div class="message-footer">
             <div class="btn-icon" style="display:${msg.role == 'ai' ? 'flex' : 'none'}">
-                <img src="${window.initConfig.baseUrl}/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
-                <img src="${window.initConfig.baseUrl}/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
+                <img src="${window.initConfig.baseUrl}/icons/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
+                <img src="${window.initConfig.baseUrl}/icons/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
             </div>
-            <span class="message-time">${getCurrentTime(msg.date)}<span>
+            <span class="message-time">${formatTimeAgo(msg.date)}<span>
         </div>
         `;
     } else {
@@ -81,24 +83,28 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
 function onPutMessage(msg: ChatDetails, reset = true) {
     const msgDiv = chatMessages.querySelector("[data-done='0']");
     if (msgDiv) {
-        const id = msgDiv.getAttribute('data-id') || '';
+        //更新
         const text = marked.parse(msg.content);
         msgDiv.setAttribute('data-done', msg.done ? '1' : '0');
 
         msgDiv.innerHTML = `
         <div class="msg">${text}</div>
-        <div class="message-footer">
-            <div class="btn-icon" style="display:${(msg.role == 'ai' && msg.done) ? 'flex' : 'none'}">
-                <img src="${window.initConfig.baseUrl}/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
-                <img src="${window.initConfig.baseUrl}/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
+        <div class="message-footer" style="display:${msg.done ? 'flex' : 'none'}">
+            <div class="btn-icon" style="display:${msg.role == 'ai' ? 'flex' : 'none'}">
+                <img src="${window.initConfig.baseUrl}/icons/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
+                <img src="${window.initConfig.baseUrl}/icons/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
             </div>
-            <span class="message-time">${getCurrentTime(msg.date)}<span>
+            <span class="message-time">${formatTimeAgo(msg.date)}<span>
         </div>
         `;
-        chatDb.insert(msg);
+        
+        if (msg.done) {
+            chatDb.addOrUpdate(msg);
+        }
+
         hljs.highlightAll();
-        scrollToBottom();
     } else {
+        //新增
         pushMessage(msg)
     }
     if (reset) {
@@ -120,10 +126,18 @@ async function copyMsgContent(img: HTMLElement, id: string) {
     }, 1000)
 }
 
+//获取历史记忆
+async function getMemory(date: number) {
+    const ar = await chatDb.getHistory(date);
+    const temp = ar.map(a => a.content);
+    return temp.join('|')
+}
+
 //重新发送信息
 async function reSendMessage(id: string, fid: string) {
-    const msg = await chatDb.one(fid);
-    if (!msg) {
+    const userMsg = await chatDb.one(fid);
+    const aiMsg = await chatDb.one(id);
+    if (!userMsg || !aiMsg) {
         return
     }
     const msgDiv = chatMessages.querySelector(`[data-id='${id}']`);
@@ -135,22 +149,23 @@ async function reSendMessage(id: string, fid: string) {
     sendButton.setAttribute('disabled', 'true');
     messageInput.setAttribute('disabled', 'true');
 
-    const newMsg = { ...msg };
+    const newAiMsg = { ...aiMsg };
 
-    newMsg.content = '思考中...';
-    newMsg.date = Date.now();
-    newMsg.done = false;
-    newMsg.id = id;
-    newMsg.role = 'ai';
-    newMsg.fid = fid;
+    newAiMsg.content = '思考中...';
+    newAiMsg.done = false;
 
-    onPutMessage(newMsg, false);
-
-    vscode.postMessage({ type: 'sendMessage', data: { id, fid, prompt: msg.content } });
+    const arg: MessageSendArg = {
+        data: newAiMsg,
+        prompt: userMsg.content,
+        memory: await getMemory(aiMsg.date),
+    }
+    vscode.postMessage({ type: 'sendMessage', data: arg });
+    //本地
+    onPutMessage(newAiMsg, false);
 }
 
 // 发送消息函数
-function sendMessage() {
+async function sendMessage() {
     const messageText = messageInput.value.trim();
     if (!messageText) return;
     sendButton.setAttribute('disabled', 'true');
@@ -163,7 +178,8 @@ function sendMessage() {
         done: true,
         date: Date.now(),
         role: "user",
-        fid: ''
+        fid: '',
+        conversationId: window.initConfig.conversation.id
     }
     pushMessage(userMsg)
 
@@ -175,26 +191,31 @@ function sendMessage() {
         content: 'Thinking...',
         date: Date.now(),
         role: "ai",
-        fid: userMsg.id
+        fid: userMsg.id,
+        conversationId: window.initConfig.conversation.id
     }
-    pushMessage(aiMsg, true)
 
     // 清空输入框
     messageInput.value = '';
 
-    vscode.postMessage({ type: 'sendMessage', data: { id: aiMsg.id, fid: aiMsg.fid, prompt: messageText } });
-}
+    const arg: MessageSendArg = {
+        data: aiMsg,
+        prompt: messageText,
+        memory: await getMemory(aiMsg.date),
+    }
 
-// 获取当前时间
-function getCurrentTime(time: number) {
-    const now = new Date(time);
-    return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    // console.log(arg.memory)
+
+    vscode.postMessage({ type: 'sendMessage', data: arg });
+
+    //进入本地
+    pushMessage(aiMsg, true)
 }
 
 // 滚动到底部
 function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    addCopyButtonForCode()
+    addCopyButtonForCode();
 }
 
 function addCopyButtonForCode() {
@@ -221,6 +242,11 @@ function addCopyButtonForCode() {
 
 }
 
+// 设置聊天模式
+function setChatMode() {
+    vscode.postMessage({ type: 'setChatMode', data: undefined });
+}
+
 // 事件监听
 sendButton.addEventListener('click', sendMessage);
 messageInput.addEventListener('keypress', (e) => {
@@ -241,11 +267,12 @@ window.addEventListener('load', () => {
 
 (window as any)['reSendMessage'] = reSendMessage;
 (window as any)['copyMsgContent'] = copyMsgContent;
+(window as any)['setChatMode'] = setChatMode;
 
 activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 
 chatDb.init().then(() => {
-    return chatDb.getAll()
+    return chatDb.getAll(window.initConfig.conversation.id)
 }).then(res => {
     res.forEach(chat => {
         pushMessage(chat, true);

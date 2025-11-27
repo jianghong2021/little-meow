@@ -7,8 +7,8 @@ export function activate(context: vscode.ExtensionContext) {
 	//注册小喵喵机器人
 	CatParticipant.init(context);
 	//注册小喵喵聊天窗口
-	const view = ChatViewProvider.register(context);
-	context.subscriptions.push(view.disposable);
+	ChatViewProvider.register(context);
+	
 	//注册小喵喵命令
 	CatCommand.init(context);
 }
