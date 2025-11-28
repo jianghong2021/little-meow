@@ -1,24 +1,63 @@
-# Little Meow Coding Assistant
-A simple and convenient AI programming assistant.
+# 小喵喵编程助手
 
-This extension uses the **official DeepSeek API**.  
-You need to apply for an API **token** from DeepSeek’s website and enter it in the extension settings.
+> 🚀 **简约 · 高效 · 贴心的 AI 编程小助手**
 
-### Motivation
-If I told you my **Copilot** usage quota ran out *again*, would you believe it?  
-Meanwhile, I topped up ¥10 on DeepSeek half a year ago, and there is still ¥9.6 left.
+小喵喵编程助手基于 **DeepSeek 官方 API**，无需复杂配置，只需在设置中填入你的 API Token，即可轻松使用。省心、省力、又省钱。
 
-### Advantages
-1. Extremely cost-effective and friendly for users in China, while paying for Copilot is often difficult.
-2. If you're used to Copilot, you can use **@Mycat**, which keeps the Copilot-style interface.
+---
 
-### Features
-1. [x] Automatically reads the visible code snippet in the current editor
-2. [x] Generates highlighted code with one-click copy
-3. [x] Built-in **Copilot-style** chat participant — interact simply by mentioning **@Mycat**
-4. [ ] Editor interaction for quick code modification
-5. [ ] Terminal interaction to automatically read errors and adjust code based on logs
+## 🌟 为什么会有小喵喵？
 
-### Screenshots
+如果我告诉你：**Copilot 又超额度了**……你信吗？🙃
+而 DeepSeek 半年前充值 **￥10**，现在余额还有 **￥9.6**。
 
-<img width="400" src="https://raw.githubusercontent.com/jianghong2021/little-meow/refs/heads/main/assets/mycat.jpg"/>
+小喵喵的出现，就是为了提供一个：
+
+* 更便宜
+* 更稳定
+* 更适合国内使用
+
+的开发辅助工具。
+
+---
+
+## 💡 小喵喵的优势
+
+1. **性价比极高** —— DeepSeek 成本低，国内访问友好，支付也方便
+2. **保留 Copilot 使用习惯** —— 输入 `@mycat` 可直接与小喵喵聊天、辅助开发
+3. **快速生成代码** —— 编辑器任意位置输入 `cat?` 即可根据当前文件语言生成对应代码片段
+4. **安全可控** —— 小喵喵不会直接修改你的代码，只会以提示形式出现
+
+示例：
+
+```typescript
+// 复制字符到剪切板 cat?
+```
+
+输入 `cat?`，稍等片刻即可在右侧自动出现生成的代码片段。
+
+---
+
+## ✨ 功能特点
+
+> 以下是小喵喵最核心、最实用的功能列表
+
+* [x] 📌 **自动读取当前编辑器可见代码范围**，智能判断上下文
+* [x] 🎨 **代码高亮显示**，可一键复制粘贴
+* [x] 🤖 **内置 Copilot 风格 AI 聊天**（`@mycat` 即可召唤）
+* [x] 🛠️ **可与编辑器交互**，支持快速内容补全与修改
+* [ ] 💻 **计划支持终端交互**：自动读取报错日志并辅助修复
+
+---
+
+## 🐾 使用建议
+
+* 配合 DeepSeek 的高性价比，让 AI 成为真正的“开发加速器”
+* 多用 `cat?` 获取灵感、小片段代码或补全
+* 遇到复杂逻辑时，直接 `@mycat` 进行对话式开发
+
+---
+
+## ❤️ 致谢
+
+感谢使用小喵喵，希望它能成为你日常开发中最贴心的“桌边小伙伴”。继续撸猫，继续写代码！

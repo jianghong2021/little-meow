@@ -129,8 +129,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         quickPick.show();
     }
 
-    private renderHtml(){
-        if(this.webview){
+    private renderHtml() {
+        if (this.webview) {
             this.webview.webview.html = this.getHtml(this.webview.webview);
         }
     }
@@ -170,7 +170,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 }
                 activeFile += vscode.window.activeTextEditor.document.getText(range).trim();
 
-                if (activeFile.length >= 500) {
+                const textEncoder = new TextEncoder();
+                if (textEncoder.encode(activeFile).length >= this.model.MAX_CONTEXT_SIZE) {
                     break;
                 }
             }

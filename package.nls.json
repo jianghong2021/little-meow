@@ -1,13 +1,13 @@
 {
-    "name": "Little Meow Programming Assistant",
-    "description":"Little Meow Programming Assistant | 小喵喵编程助手",
-    "activitybar.main.name": "Little Meow",
-    "activitybar.main.view.name": "Chat",
-    "view.open.chat":"Consult Little Meow",
-    "settings.model.token":"Model API Token",
-    "view.chat.clear": "Clear Chat",
-    "view.chat.settings": "Settings",
-    "view.chat.clear.success": "Chat cleared",
-    "view.chat.history": "Caht History",
-    "view.chat.new": "New Chat"
+    "name": "小喵喵编程助手",
+    "description":"简约方便的AI编程助手，快速生成代码，完全自由使用",
+    "activitybar.main.name": "小喵喵",
+    "activitybar.main.view.name": "聊天",
+    "view.open.chat":"咨询小喵喵",
+    "settings.model.token":"API令牌token",
+    "view.chat.clear": "删除聊天",
+    "view.chat.settings": "设置",
+    "view.chat.clear.success": "已清除聊天",
+    "view.chat.history": "聊天记录",
+    "view.chat.new": "新聊天"
 }
