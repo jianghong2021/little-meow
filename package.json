@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.106.1"
   },
@@ -15,6 +15,7 @@
     "AI",
     "my cat",
     "Little Meow",
+    "AI Code",
     "聊天",
     "编程",
     "小喵喵"
@@ -76,7 +77,7 @@
     "chatParticipants": [
       {
         "id": "chat-my-lovely-cat",
-        "name": "mycat",
+        "name": "cat",
         "fullName": "%name%",
         "description": "%description%",
         "isSticky": true

@@ -13,6 +13,7 @@ export class DeepseekModel {
     private API_TOKEN = '';
     private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
+    private lastGetAccount = 0;
 
     public async initConfig(context: vscode.ExtensionContext) {
         const now = Date.now();
@@ -22,6 +23,8 @@ export class DeepseekModel {
         this.lastCheck = now;
         const config = new ConfigDa(context);
         this.API_TOKEN = (await config.getToken()) || '';
+
+        this.getAccountBalance()
     }
 
     private async request(msg: string, scope = '', memory = ''): Promise<string> {
@@ -89,14 +92,14 @@ export class DeepseekModel {
         if (!data.choices[0]) {
             throw Error('生成失败，请稍后重试')
         }
-        console.log(data)
+        this.getAccountBalance()
         const code = data.choices[0].text;
         return code;
     }
 
     public async completionsCode(prompt: string, suffix = '') {
         try {
-            const res = await this.completions(prompt,suffix);
+            const res = await this.completions(prompt, suffix);
             return res;
         } catch (error: any) {
             return `${error.message || '未知错误'}`
@@ -133,12 +136,45 @@ export class DeepseekModel {
         return code;
     }
 
-    public async genrateCode(prompt: string){
+    public async genrateCode(prompt: string) {
         try {
             const res = await this.getCode(prompt);
             return res;
         } catch (error: any) {
             return `${error.message || '未知错误'}`
         }
+    }
+
+    public async getAccountBalance() {
+        const now = Date.now();
+        if (this.lastGetAccount > 0 && now - this.lastGetAccount < 5_000) {
+            return
+        }
+        this.lastGetAccount = now;
+        const res = await fetch(`${this.API_URL}/user/balance`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.API_TOKEN
+            }
+        })
+        const data: AccountBalance | undefined = await res.json().catch((err) => {
+            console.log(err)
+            return undefined
+        });
+        if (!data) {
+            vscode.window.setStatusBarMessage('小喵喵: 获取账户失败')
+            return
+        }
+
+        let text = `小喵喵: 余额不足`;
+        if (data.is_available) {
+            const balance = data.balance_infos[0];
+            text = `小喵喵: ${balance.total_balance} ${balance.currency}`
+        }
+
+        console.log(data)
+
+        vscode.window.setStatusBarMessage(text)
     }
 }

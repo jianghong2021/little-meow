@@ -3,8 +3,10 @@ import { CatParticipant } from './cat/CatParticipant';
 import { CatCommand } from './cat/CatCommand';
 import { ChatViewProvider } from './cat/ChatViewProvider';
 import { CompletionProvider } from './cat/CompletionProvider';
+import * as nls from 'vscode-nls';
 
 export function activate(context: vscode.ExtensionContext) {
+	nls.config({ locale: 'zh-cn' })();
 	//注册小喵喵机器人
 	CatParticipant.init(context);
 	//注册小喵喵代码补全

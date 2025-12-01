@@ -23,8 +23,8 @@ KittyCoder was created to provide a development assistant that is:
 ## 💡 Key Advantages
 
 1. **Extremely cost-effective** — DeepSeek is inexpensive, fast, and easy to pay for  
-2. **Copilot-like experience** — Type `@mycat` to chat just like with Copilot  
-3. **Instant code generation** — Type `cat?` anywhere in the editor to get code generated based on the current file’s language  
+2. **Copilot-like experience** — Type `@cat` to chat just like with Copilot  
+3. **Instant code generation** — Type `@cat` anywhere in the editor to get code generated based on the current file’s language  
 4. **Safe and non-intrusive** — KittyCoder never modifies your code directly; it only provides suggestions
 
 Example:

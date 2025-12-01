@@ -16,11 +16,11 @@ export class CatCommand {
         context.subscriptions.push(settingsDepose);
 
         // 打开设置
-        const setTokenDepose = vscode.commands.registerCommand('my-lovely-cat.setToken', async() => {
+        const setTokenDepose = vscode.commands.registerCommand('my-lovely-cat.setToken', async () => {
             const token = await vscode.window.showInputBox({
-                title:'请输入API令牌token'
+                title: '请输入API令牌token'
             });
-            if(token){
+            if (token) {
                 const db = new ConfigDa(context);
                 db.setToken(token);
             }

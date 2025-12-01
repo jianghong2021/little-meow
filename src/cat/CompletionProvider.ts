@@ -1,63 +1,84 @@
 import * as vscode from 'vscode';
 import { DeepseekModel } from './DeepseekModel';
 
-export class CompletionProvider implements vscode.CompletionItemProvider {
+export class CompletionProvider implements vscode.InlineCompletionItemProvider {
     private context: vscode.ExtensionContext;
     private model: DeepseekModel;
-    private keywords = 'cat';
-    private triggerCharacter = '?';
+    private keywords = '@cat ';
     private grenrating = false;
+    private last = 0;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.model = new DeepseekModel();
         this.model.initConfig(context);
     }
+
     static init(context: vscode.ExtensionContext) {
         const provider = new CompletionProvider(context);
-        const doc = { scheme: "file" };
-        const depose = vscode.languages.registerCompletionItemProvider(doc, provider, provider.triggerCharacter);
+        const doc = { pattern: "**" };
+        const depose = vscode.languages.registerInlineCompletionItemProvider(doc, provider);
         context.subscriptions.push(depose);
 
         console.log('注册小喵喵补全')
     }
-    async provideCompletionItems(
+    async provideInlineCompletionItems(
         document: vscode.TextDocument,
-        position: vscode.Position
-    ): Promise<vscode.CompletionItem[]> {
+        position: vscode.Position,
+        context: vscode.InlineCompletionContext,
+        token: vscode.CancellationToken
+    ) {
+        const list: vscode.InlineCompletionItem[] = [];
+
+        const now = Date.now();
+        if (this.last > 0 && now - this.last < 300) {
+            return []
+        }
+
+        this.last = now;
+
+        if (this.grenrating) {
+            return [];
+        }
 
         const line = document.lineAt(position).text;
-        const prompt = line.replace(this.keywords + this.triggerCharacter, '').replaceAll(/[\\#\*]/g, '')
-
-        if (!line.endsWith(this.keywords + this.triggerCharacter)) {
-            return [];
+        const prex = line.substring(0, position.character);
+        if (!prex.endsWith(this.keywords)) {
+            return list
         }
 
-        if(this.grenrating){
-            return [];
-        }
+        const prompt = line.trim().replace(this.keywords, '').replaceAll(/[\/\\\#\*]/g, '');
 
         this.grenrating = true;
 
+        const lang = this.getDocumentLanguage(document);
+        console.log('正在生成: ',`编程语言：${lang}, ${prompt}`)
         const text = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "正在生成代码...",
             cancellable: false
         }, () => {
 
-            return this.model.genrateCode(`编程语言：${document.languageId}，${prompt}`);
+            return this.model.genrateCode(`编程语言：${lang}, ${prompt}`);
         });
-        const item = this.createCompletionItem(prompt,text);
+        console.log(text)
+        const item = this.createInlineCompletionItem(text, position)
         this.grenrating = false;
-        return [item];
-
+        list.push(item)
+        return list
     }
 
-    private createCompletionItem(prompt: string,text:string): vscode.CompletionItem {
-        const item = new vscode.CompletionItem('已生成代码', vscode.CompletionItemKind.Text);
-        item.insertText = '\n' + text.replaceAll(/\`{3}(\w+)?/g,'');
-        item.detail = 'Tab/Enter插入此代码';
-        item.documentation = new vscode.MarkdownString(text);
+    private createInlineCompletionItem(text: string, position: vscode.Position): vscode.InlineCompletionItem {
+        const insertText = '\n' + text.replaceAll(/\`{3}(\w+)?/g, '');
+        const item = new vscode.InlineCompletionItem(insertText);
         return item;
     }
 
+    private getDocumentLanguage(document: vscode.TextDocument) {
+        if (document.languageId == 'vue') {
+            const isTS = document.getText().includes('lang="ts"');
+            return isTS ? 'typescript' : 'javascript'
+        } else {
+            return document.languageId
+        }
+    }
 }

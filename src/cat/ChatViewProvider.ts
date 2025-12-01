@@ -4,7 +4,7 @@ import { DeepseekModel } from './DeepseekModel';
 import { ConversationDb } from '../data/ConversationData';
 import { formatTimeAgo } from '../utils/date';
 
-const localize = nls.config({ messageFormat: nls.MessageFormat.file })();
+const localize = nls.loadMessageBundle();
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     static VIEW_ID = 'my-lovely-cat-view'
@@ -41,6 +41,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     break
             }
         })
+
+        webviewView.title = localize('view.chat.settings','hello')
 
         const editorDispose = vscode.window.onDidChangeActiveTextEditor((event) => {
             this.webview?.webview?.postMessage({
