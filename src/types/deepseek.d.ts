@@ -7,3 +7,15 @@ interface AccountBalance {
         topped_up_balance: string
     }[]
 }
+
+interface ChatMessage {
+    role?: string
+    content: string
+}
+
+interface ChatResponse {
+    choices: {
+        delta: ChatMessage
+        message: ChatMessage
+    }[]
+}

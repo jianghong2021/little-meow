@@ -27,7 +27,7 @@ export class DeepseekModel {
         this.getAccountBalance()
     }
 
-    private async request(msg: string, scope = '', memory = ''): Promise<string> {
+    public async request(msg: string, scope = '', memory = ''): Promise<string> {
         if (!this.API_TOKEN) {
             throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置')
         }
@@ -57,6 +57,38 @@ export class DeepseekModel {
         }
         const code = data.choices[0].message.content;
         return code;
+    }
+
+    public async requestSSE(msg: string, scope = '', memory = '') {
+        if (!this.API_TOKEN) {
+            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置')
+        }
+        const res = await fetch(`${this.API_URL}/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.API_TOKEN
+            },
+            body: JSON.stringify({
+                "model": "deepseek-chat",
+                "temperature": DeepseekTemperature.CODE,
+                "max_tokens": 8192,
+                "messages": [
+                    { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上emoji" },
+                    { "role": "system", "content": '回答问题时，注意内容简练，尽可能的简短，不要过多不必要的赘述' },
+                    { "role": "system", "content": scope },
+                    { "role": "system", "content": `用户历史提问(|分割): ${memory}` },
+                    { "role": "user", "content": msg }
+                ],
+                "stream": true
+            })
+        })
+        const stream = res.body?.getReader();
+        if(!stream){
+            throw Error('获取流失败')
+        }
+
+        return stream
     }
 
     public async sendMsg(msg: string, scope = '', memory = '') {
@@ -172,8 +204,6 @@ export class DeepseekModel {
             const balance = data.balance_infos[0];
             text = `小喵喵: ${balance.total_balance} ${balance.currency}`
         }
-
-        console.log(data)
 
         vscode.window.setStatusBarMessage(text)
     }

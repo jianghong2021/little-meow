@@ -42,7 +42,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             }
         })
 
-        webviewView.title = localize('view.chat.settings','hello')
+        webviewView.title = localize('view.chat.settings', 'hello')
 
         const editorDispose = vscode.window.onDidChangeActiveTextEditor((event) => {
             this.webview?.webview?.postMessage({
@@ -182,15 +182,51 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         // 与模型交互
         await this.model.initConfig(this.context);
-        const res = await this.model.sendMsg(prompt, activeFile, memory);
-        msg.title = res.substring(0, 16);
-        msg.content = res;
+        const stream = await this.model.requestSSE(prompt, activeFile, memory);
+        msg.title = prompt.substring(0, 16);
+        msg.content = "";
 
         //更新会话标题
         conv.title = prompt;
         db.update(msg.conversationId, conv);
 
         //返回消息
+        const decoder = new TextDecoder();
+        while (true) {
+            const { done, value } = await stream.read();
+            if (done) {
+                break
+            }
+            const chunk = decoder.decode(value).trim();
+            if (chunk.includes('[DONE]')) {
+                break
+            }
+            if (chunk == '') {
+                continue
+            }
+            const ar = chunk.split('\n');
+            for (const s of ar) {
+                if (s.trim() == '') {
+                    continue
+                }
+                const line = s.replace(/data\:\s?/i, '');
+                const data: ChatResponse = JSON.parse(line);
+                if (!data.choices[0]) {
+                    continue
+                }
+                const answer:ChatDetails = {
+                    ...msg,
+                    content: data.choices[0].delta.content
+                }
+                
+                this.webview?.webview?.postMessage({
+                    type: 'onAnswer',
+                    data: answer
+                })
+            }
+
+        }
+
         this.webview?.webview?.postMessage({
             type: 'onPutMessage',
             data: msg

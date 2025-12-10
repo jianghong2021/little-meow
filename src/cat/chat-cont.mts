@@ -12,6 +12,10 @@ hljs.registerLanguage('javascript', javascript);
 
 const chatDb = new ChatDb();
 
+const state = {
+    data: [] as ChatDetails[]
+}
+
 // 获取DOM元素
 const messageInput = document.getElementById('message-input') as HTMLInputElement;
 const sendButton = document.getElementById('send-button') as HTMLButtonElement;
@@ -22,7 +26,10 @@ function onmessage(e: MessageEvent) {
     const { type, data } = e.data;
     switch (type) {
         case 'onPutMessage':
-            onPutMessage(data);
+            onServerPutMessage(data);
+            break
+        case 'onAnswer':
+            onAnswer(data);
             break
         case 'clearHistory':
             clearHistory()
@@ -80,6 +87,16 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
     hljs.highlightAll();
 }
 
+function onServerPutMessage(msg: ChatDetails) {
+    const m = state.data.find(x => x.id == msg.id);
+    if (!m) {
+        console.error('未找到信息');
+        return
+    }
+    m.done = true;
+    onPutMessage(m);
+}
+
 function onPutMessage(msg: ChatDetails, reset = true) {
     const msgDiv = chatMessages.querySelector("[data-done='0']");
     if (msgDiv) {
@@ -97,7 +114,7 @@ function onPutMessage(msg: ChatDetails, reset = true) {
             <span class="message-time">${formatTimeAgo(msg.date)}<span>
         </div>
         `;
-        
+
         if (msg.done) {
             chatDb.addOrUpdate(msg);
         }
@@ -112,6 +129,16 @@ function onPutMessage(msg: ChatDetails, reset = true) {
         messageInput.removeAttribute('disabled');
     }
 
+}
+
+function onAnswer(msg: ChatDetails) {
+    const index = state.data.findIndex(x => x.id == msg.id);
+    const newMsg = state.data[index] || msg;
+    newMsg.content += msg.content;
+    newMsg.done = false;
+
+    state.data.splice(index,1,newMsg);
+    onPutMessage(newMsg);
 }
 
 async function copyMsgContent(img: HTMLElement, id: string) {
@@ -274,6 +301,7 @@ activeDocument.textContent = getFileName(window.initConfig.activeDocument || '')
 chatDb.init().then(() => {
     return chatDb.getAll(window.initConfig.conversation.id)
 }).then(res => {
+    state.data = res;
     res.forEach(chat => {
         pushMessage(chat, true);
     })
