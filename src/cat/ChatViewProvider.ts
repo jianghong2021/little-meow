@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as nls from 'vscode-nls';
-import { DeepseekModel } from './DeepseekModel';
+import { AiModel } from './AiModel';
 import { ConversationDb } from '../data/ConversationData';
 import { formatTimeAgo } from '../utils/date';
 
@@ -11,7 +11,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private context: vscode.ExtensionContext
     public projects: ChatDetails[] = []
     public webview?: vscode.WebviewView
-    public model = new DeepseekModel();
+    public model = new AiModel();
     constructor(context: vscode.ExtensionContext) {
         this.context = context
     }
@@ -182,7 +182,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         // 与模型交互
         await this.model.initConfig(this.context);
-        const stream = await this.model.requestSSE(prompt, activeFile, memory);
         msg.title = prompt.substring(0, 16);
         msg.content = "";
 
@@ -190,46 +189,30 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         conv.title = prompt;
         db.update(msg.conversationId, conv);
 
-        //返回消息
-        const decoder = new TextDecoder();
-        while (true) {
-            const { done, value } = await stream.read();
-            if (done) {
-                break
-            }
-            const chunk = decoder.decode(value).trim();
-            if (chunk.includes('[DONE]')) {
-                break
-            }
-            if (chunk == '') {
-                continue
-            }
-            const ar = chunk.split('\n');
-            for (const s of ar) {
-                if (s.trim() == '') {
-                    continue
-                }
-                const line = s.replace(/data\:\s?/i, '');
-                const data: ChatResponse = JSON.parse(line);
-                if (!data.choices[0]) {
-                    continue
-                }
-                const answer:ChatDetails = {
-                    ...msg,
-                    content: data.choices[0].delta.content
-                }
-                
-                this.webview?.webview?.postMessage({
-                    type: 'onAnswer',
-                    data: answer
-                })
+        this.model.sseChat(prompt, activeFile, memory, text => {
+            const answer: ChatDetails = {
+                ...msg,
+                content: text
             }
 
-        }
-
-        this.webview?.webview?.postMessage({
-            type: 'onPutMessage',
-            data: msg
+            this.webview?.webview?.postMessage({
+                type: 'onAnswer',
+                data: answer
+            })
+        }).then(() => {
+            msg.answer = true;
+            msg.done = true;
+            this.webview?.webview?.postMessage({
+                type: 'onPutMessage',
+                data: msg
+            })
+        }).catch(err => {
+            msg.done = true;
+            msg.content = err.message || 'unknown error';
+            this.webview?.webview?.postMessage({
+                type: 'onPutMessage',
+                data: msg
+            })
         })
     }
 

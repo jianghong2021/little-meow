@@ -7,13 +7,31 @@ export class ConfigDa {
         this.context = context;
     }
 
-    public getConfig() {
+    public models:ChatModel[] = [
+        {
+            type: 'deepseek',
+            name: 'deepseek-chat',
+            label: 'chat'
+        },
+        {
+            type: 'deepseek',
+            name: 'deepseek-reasoner',
+            label: 'reasoner'
+        }
+    ]
+
+    public get data() {
         const cache = this.context.globalState.get(this.CACHE_KEY);
         if (cache) {
             return cache as ChatConfig
         }
         const conf: ChatConfig = {
-            mode: 'norm'
+            mode: 'norm',
+            model: {
+                type: 'deepseek',
+                name: 'deepseek-chat',
+                label: 'chat'
+            }
         }
         return conf;
     }
@@ -23,12 +41,14 @@ export class ConfigDa {
     }
 
     public setToken(token: string){
-        const id = this.context.extension.id;
+        const config = this.data;
+        const id = this.context.extension.id + config.model.type;
         this.context.secrets.store(id,token);
     }
 
     public async getToken(){
-        const id = this.context.extension.id;
+        const config = this.data;
+        const id = this.context.extension.id + config.model.type;
         return await this.context.secrets.get(id);
     }
 }

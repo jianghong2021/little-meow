@@ -15,13 +15,14 @@ export class CatCommand {
         });
         context.subscriptions.push(settingsDepose);
 
-        // 打开设置
+        // 配置token
         const setTokenDepose = vscode.commands.registerCommand('my-lovely-cat.setToken', async () => {
+            const db = new ConfigDa(context);
             const token = await vscode.window.showInputBox({
-                title: '请输入API令牌token'
+                title: `请输入【${db.data.model.type}】API令牌token`,
             });
             if (token) {
-                const db = new ConfigDa(context);
+                
                 db.setToken(token);
             }
         });

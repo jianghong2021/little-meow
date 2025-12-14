@@ -88,17 +88,25 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
 }
 
 function onServerPutMessage(msg: ChatDetails) {
-    const m = state.data.find(x => x.id == msg.id);
-    if (!m) {
-        console.error('未找到信息');
-        return
+    const index = state.data.findIndex(x => x.id == msg.id);
+    if (index == -1) {
+        console.log('信息不存在', msg)
+        return;
     }
-    m.done = true;
-    onPutMessage(m);
+    const m = { ...state.data[index] };
+    if (msg.answer) {
+        m.content += msg.content;
+    } else {
+        m.content = msg.content;
+    }
+    m.done = msg.done;
+    m.answer = msg.answer;
+    state.data.splice(index, 1, m);
+    onPutMessage(m, true);
 }
 
 function onPutMessage(msg: ChatDetails, reset = true) {
-    const msgDiv = chatMessages.querySelector("[data-done='0']");
+    const msgDiv = chatMessages.querySelector(`[data-id='${msg.id}']`);
     if (msgDiv) {
         //更新
         const text = marked.parse(msg.content);
@@ -115,14 +123,13 @@ function onPutMessage(msg: ChatDetails, reset = true) {
         </div>
         `;
 
-        if (msg.done) {
-            chatDb.addOrUpdate(msg);
-        }
-
         hljs.highlightAll();
-    } else {
+    }else {
         //新增
         pushMessage(msg)
+    }
+    if (msg.done) {
+        chatDb.addOrUpdate(msg);
     }
     if (reset) {
         sendButton.removeAttribute('disabled');
@@ -137,7 +144,7 @@ function onAnswer(msg: ChatDetails) {
     newMsg.content += msg.content;
     newMsg.done = false;
 
-    state.data.splice(index,1,newMsg);
+    state.data.splice(index, 1, newMsg);
     onPutMessage(newMsg);
 }
 
@@ -202,6 +209,7 @@ async function sendMessage() {
         id: uuidv4(),
         title: messageText.substring(0, 16),
         content: messageText,
+        answer: false,
         done: true,
         date: Date.now(),
         role: "user",
@@ -214,6 +222,7 @@ async function sendMessage() {
     const aiMsg: ChatDetails = {
         id: uuidv4(),
         title: '',
+        answer: false,
         done: false,
         content: 'Thinking...',
         date: Date.now(),
@@ -231,12 +240,11 @@ async function sendMessage() {
         memory: await getMemory(aiMsg.date),
     }
 
-    // console.log(arg.memory)
+    //进入本地
+    state.data.push(aiMsg);
+    pushMessage(aiMsg, true);
 
     vscode.postMessage({ type: 'sendMessage', data: arg });
-
-    //进入本地
-    pushMessage(aiMsg, true)
 }
 
 // 滚动到底部

@@ -9,6 +9,7 @@ interface ChatDetails{
     conversationId: string
     title: string
     done?: boolean
+    answer?: boolean
     content: string
     date: number
     role: ChatDetailsRole

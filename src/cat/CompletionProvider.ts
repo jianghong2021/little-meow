@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
-import { DeepseekModel } from './DeepseekModel';
+import { AiModel } from './AiModel';
 
 export class CompletionProvider implements vscode.InlineCompletionItemProvider {
     private context: vscode.ExtensionContext;
-    private model: DeepseekModel;
+    private model: AiModel;
     private keywords = '@cat ';
     private grenrating = false;
     private last = 0;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
-        this.model = new DeepseekModel();
+        this.model = new AiModel();
         this.model.initConfig(context);
     }
 
@@ -58,7 +58,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
             cancellable: false
         }, () => {
 
-            return this.model.genrateCode(`编程语言：${lang}, ${prompt}`);
+            return this.model.code(`编程语言：${lang}, ${prompt}`);
         });
         console.log(text)
         const item = this.createInlineCompletionItem(text, position)

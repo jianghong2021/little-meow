@@ -30,4 +30,4 @@ KittyCoder was created to provide a development assistant that is:
 Example:
 
 ```typescript
-// Copy text to clipboard cat?
+// Copy text to clipboard @cat
