@@ -20,7 +20,8 @@ const state = {
 const messageInput = document.getElementById('message-input') as HTMLInputElement;
 const sendButton = document.getElementById('send-button') as HTMLButtonElement;
 const chatMessages = document.getElementById('chat-messages') as HTMLElement;
-const activeDocument = document.querySelector('#activeDocument span') as HTMLElement;
+const activeDocumentBox = document.querySelector('#activeDocument') as HTMLElement;
+const activeDocument = activeDocumentBox.querySelector('span') as HTMLElement;
 
 function onmessage(e: MessageEvent) {
     const { type, data } = e.data;
@@ -48,6 +49,13 @@ function getFileName(file: string) {
 function onDocumentChange(file?: string) {
     window.initConfig.activeDocument = file;
     activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
+
+    console.log(file)
+    if(file){
+        activeDocumentBox.style.display = 'flex';
+    }else{
+        activeDocumentBox.style.display = 'none';
+    }
 }
 
 function clearHistory() {
@@ -59,10 +67,10 @@ function clearHistory() {
 function pushMessage(msg: ChatDetails, onlyRender = false) {
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', msg.role);
-    msgDiv.setAttribute('data-done', msg.done ? '1' : '0');
+    msgDiv.setAttribute('data-status', msg.status);
     msgDiv.setAttribute('data-id', msg.id);
     const text = marked.parse(msg.content);
-    if (msg.done) {
+    if (msg.status === 'ended') {
         msgDiv.innerHTML = `
         <div class="msg">${text}</div>
         <div class="message-footer">
@@ -73,6 +81,10 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
             <span class="message-time">${formatTimeAgo(msg.date)}<span>
         </div>
         `;
+    } else if (msg.status === 'waiting') {
+        msgDiv.innerHTML = `<div class="msg waiting">
+            <img src="${window.initConfig.baseUrl}/icons/loading${window.initConfig.isDark ? '-dark' : ''}.svg"/>
+        </div>`;
     } else {
         msgDiv.innerHTML = `<div class="msg">${text}</div>`;
     }
@@ -87,6 +99,21 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
     hljs.highlightAll();
 }
 
+function getStatusMsgs(id: string) {
+    return state.data.find(x => x.id === id);
+}
+
+function updateStatusMsgs(msg: ChatDetails) {
+    const index = state.data.findIndex(x => x.id == msg.id);
+    if (index == -1) {
+        state.data.push({ ...msg });
+        return;
+    }
+    const m = { ...state.data[index] };
+    Object.assign(m, msg);
+    state.data.splice(index, 1, m);
+}
+
 function onServerPutMessage(msg: ChatDetails) {
     const index = state.data.findIndex(x => x.id == msg.id);
     if (index == -1) {
@@ -94,13 +121,12 @@ function onServerPutMessage(msg: ChatDetails) {
         return;
     }
     const m = { ...state.data[index] };
-    if (msg.answer) {
+    if (msg.status === 'answering' || msg.content.trim() === '') {
         m.content += msg.content;
     } else {
         m.content = msg.content;
     }
-    m.done = msg.done;
-    m.answer = msg.answer;
+    m.status = msg.status;
     state.data.splice(index, 1, m);
     onPutMessage(m, true);
 }
@@ -110,11 +136,12 @@ function onPutMessage(msg: ChatDetails, reset = true) {
     if (msgDiv) {
         //更新
         const text = marked.parse(msg.content);
-        msgDiv.setAttribute('data-done', msg.done ? '1' : '0');
+        msgDiv.setAttribute('data-done', msg.status);
 
-        msgDiv.innerHTML = `
+        if (msg.status === 'ended') {
+            msgDiv.innerHTML = `
         <div class="msg">${text}</div>
-        <div class="message-footer" style="display:${msg.done ? 'flex' : 'none'}">
+        <div class="message-footer" style="display:${msg.status === 'ended' ? 'flex' : 'none'}">
             <div class="btn-icon" style="display:${msg.role == 'ai' ? 'flex' : 'none'}">
                 <img src="${window.initConfig.baseUrl}/icons/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
                 <img src="${window.initConfig.baseUrl}/icons/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
@@ -123,12 +150,20 @@ function onPutMessage(msg: ChatDetails, reset = true) {
         </div>
         `;
 
+        } else if (msg.status === 'waiting') {
+            msgDiv.innerHTML = `<div class="msg waiting">
+            <img src="${window.initConfig.baseUrl}/icons/loading${window.initConfig.isDark ? '-dark' : ''}.svg"/>
+        </div>`;
+        } else {
+            msgDiv.innerHTML = `<div class="msg">${text}</div>`;
+        }
+
         hljs.highlightAll();
-    }else {
+    } else {
         //新增
         pushMessage(msg)
     }
-    if (msg.done) {
+    if (msg.status === 'ended') {
         chatDb.addOrUpdate(msg);
     }
     if (reset) {
@@ -142,8 +177,7 @@ function onAnswer(msg: ChatDetails) {
     const index = state.data.findIndex(x => x.id == msg.id);
     const newMsg = state.data[index] || msg;
     newMsg.content += msg.content;
-    newMsg.done = false;
-
+    newMsg.status = msg.status;
     state.data.splice(index, 1, newMsg);
     onPutMessage(newMsg);
 }
@@ -185,14 +219,16 @@ async function reSendMessage(id: string, fid: string) {
 
     const newAiMsg = { ...aiMsg };
 
-    newAiMsg.content = '思考中...';
-    newAiMsg.done = false;
+    newAiMsg.content = '';
+    newAiMsg.status = 'waiting';
 
     const arg: MessageSendArg = {
         data: newAiMsg,
         prompt: userMsg.content,
         memory: await getMemory(aiMsg.date),
     }
+
+    updateStatusMsgs(newAiMsg);
     vscode.postMessage({ type: 'sendMessage', data: arg });
     //本地
     onPutMessage(newAiMsg, false);
@@ -209,22 +245,21 @@ async function sendMessage() {
         id: uuidv4(),
         title: messageText.substring(0, 16),
         content: messageText,
-        answer: false,
-        done: true,
+        status: 'ended',
         date: Date.now(),
         role: "user",
         fid: '',
         conversationId: window.initConfig.conversation.id
     }
-    pushMessage(userMsg)
+    updateStatusMsgs(userMsg);
+    pushMessage(userMsg);
 
     // AI消息
     const aiMsg: ChatDetails = {
         id: uuidv4(),
         title: '',
-        answer: false,
-        done: false,
-        content: 'Thinking...',
+        status: 'waiting',
+        content: '',
         date: Date.now(),
         role: "ai",
         fid: userMsg.id,
@@ -243,7 +278,7 @@ async function sendMessage() {
     //进入本地
     state.data.push(aiMsg);
     pushMessage(aiMsg, true);
-
+    updateStatusMsgs(aiMsg);
     vscode.postMessage({ type: 'sendMessage', data: arg });
 }
 
@@ -282,6 +317,10 @@ function setChatMode() {
     vscode.postMessage({ type: 'setChatMode', data: undefined });
 }
 
+function setModel(val:string){
+    vscode.postMessage({ type: 'setModel', data: val });
+}
+
 // 事件监听
 sendButton.addEventListener('click', sendMessage);
 messageInput.addEventListener('keypress', (e) => {
@@ -303,6 +342,7 @@ window.addEventListener('load', () => {
 (window as any)['reSendMessage'] = reSendMessage;
 (window as any)['copyMsgContent'] = copyMsgContent;
 (window as any)['setChatMode'] = setChatMode;
+(window as any)['setModel'] = setModel;
 
 activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 

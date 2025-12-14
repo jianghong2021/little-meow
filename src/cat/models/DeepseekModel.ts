@@ -13,7 +13,6 @@ export class DeepseekModel implements AiCommModel {
     private API_TOKEN = '';
     private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
-    private lastGetAccount = 0;
 
     constructor(token: string) {
         this.API_TOKEN = token;
@@ -22,18 +21,18 @@ export class DeepseekModel implements AiCommModel {
     public async initConfig(context: vscode.ExtensionContext) {
         const now = Date.now();
         if (this.API_TOKEN && this.lastCheck > 0 && now - this.lastCheck < 1000 * 15) {
-            return
+            return;
         }
         this.lastCheck = now;
         const config = new ConfigDa(context);
         this.API_TOKEN = (await config.getToken()) || '';
 
-        this.getAccountBalance()
+        this.getAccountBalance();
     }
 
     public async request(prompt: string, snippet = '', memory = ''): Promise<string> {
         if (!this.API_TOKEN) {
-            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置')
+            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
         }
         const res = await fetch(`${this.API_URL}/chat/completions`, {
             method: 'POST',
@@ -54,10 +53,10 @@ export class DeepseekModel implements AiCommModel {
                 ],
                 "stream": false
             })
-        })
-        const data: any = await res.json()
+        });
+        const data: any = await res.json();
         if (!data.choices[0]) {
-            throw Error('生成失败，请稍后重试')
+            throw Error('生成失败，请稍后重试');
         }
         const code = data.choices[0].message.content;
         return code;
@@ -65,7 +64,7 @@ export class DeepseekModel implements AiCommModel {
 
     public async requestSSE(prompt: string, snippet = '', memory = '') {
         if (!this.API_TOKEN) {
-            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置')
+            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
         }
         const res = await fetch(`${this.API_URL}/chat/completions`, {
             method: 'POST',
@@ -86,18 +85,18 @@ export class DeepseekModel implements AiCommModel {
                 ],
                 "stream": true
             })
-        })
+        });
         const stream = res.body?.getReader();
         if (!stream) {
-            throw Error('获取流失败')
+            throw Error('获取流失败');
         }
 
-        return stream
+        return stream;
     }
 
     private async getCode(prompt: string): Promise<string> {
         if (!this.API_TOKEN) {
-            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置')
+            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
         }
         const res = await fetch(`${this.API_URL}/chat/completions`, {
             method: 'POST',
@@ -116,52 +115,47 @@ export class DeepseekModel implements AiCommModel {
                 ],
                 "stream": false
             })
-        })
-        const data: any = await res.json()
+        });
+        const data: any = await res.json();
         if (!data.choices[0]) {
-            throw Error('生成失败，请稍后重试')
+            throw Error('生成失败，请稍后重试');
         }
         const code = data.choices[0].message.content;
         return code;
     }
 
     public async getAccountBalance() {
-        const now = Date.now();
-        if (this.lastGetAccount > 0 && now - this.lastGetAccount < 5_000) {
-            return
-        }
-        this.lastGetAccount = now;
         const res = await fetch(`${this.API_URL}/user/balance`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + this.API_TOKEN
             }
-        })
+        });
         const data: AccountBalance | undefined = await res.json().catch((err) => {
-            console.log(err)
-            return undefined
+            console.log(err);
+            return undefined;
         });
         if (!data) {
-            vscode.window.setStatusBarMessage('小喵喵: 获取账户失败')
-            return
+            vscode.window.setStatusBarMessage('小喵喵: 获取账户失败');
+            return;
         }
 
         let text = `小喵喵: 余额不足`;
         if (data.is_available) {
             const balance = data.balance_infos[0];
-            text = `小喵喵: ${balance.total_balance} ${balance.currency}`
+            text = `小喵喵: ${balance.total_balance} ${balance.currency}`;
         }
 
-        vscode.window.setStatusBarMessage(text)
+        vscode.window.setStatusBarMessage(text);
     }
 
     chat(prompt: string, snippet?: string, memory?: string) {
-        return this.request(prompt,snippet,memory)
+        return this.request(prompt,snippet,memory);
     }
     async code(prompt: string) {
 
-        return this.getCode(prompt)
+        return this.getCode(prompt);
     }
 
     async sseChat(prompt: string, snippet?: string, memory?: string, onMsg?: (msg: string) => void) {
@@ -174,24 +168,24 @@ export class DeepseekModel implements AiCommModel {
         while (true) {
             const { done, value } = await stream.read();
             if (done) {
-                break
+                break;
             }
             const chunk = decoder.decode(value).trim();
             if (chunk.includes('[DONE]')) {
-                break
+                break;
             }
-            if (chunk == '') {
-                continue
+            if (chunk === '') {
+                continue;
             }
             const ar = chunk.split('\n');
             for (const s of ar) {
-                if (s.trim() == '') {
-                    continue
+                if (s.trim() === '') {
+                    continue;
                 }
                 const line = s.replace(/data\:\s?/i, '');
                 const data: ChatResponse = JSON.parse(line);
                 if (!data.choices[0]) {
-                    continue
+                    continue;
                 }
 
                 onMsg(data.choices[0].delta.content);

@@ -9,7 +9,7 @@ export class ConversationDb {
 
     public getAll() {
         const res: ConversationDetails[] = this.context.globalState.get(this.CACHE_KEY) || [];
-        return res.sort((a, b) => b.date - a.date)
+        return res.sort((a, b) => b.date - a.date);
     }
 
     public one(id: string) {
@@ -17,19 +17,19 @@ export class ConversationDb {
     }
 
     public latestOrSelected() {
-        const ar = this.getAll()
+        const ar = this.getAll();
         const selected = ar.find(x => x.selected);
-        if(selected){
+        if (selected) {
             return selected;
         }
-        if(ar.length==0){
-            return
+        if (ar.length === 0) {
+            return;
         }
         const conv = ar[0];
         conv.selected = true;
         this.setActive(conv.id);
 
-        return conv
+        return conv;
     }
 
     public update(id: string, data: ConversationDetails) {
@@ -40,20 +40,20 @@ export class ConversationDb {
                 break;
             }
         }
-        
-        this.context.globalState.update(this.CACHE_KEY, ar)
+
+        this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
-    public setActive(id: string){
+    public setActive(id: string) {
         const ar = this.getAll();
         for (let i = 0; i < ar.length; i++) {
             if (ar[i].id === id) {
                 ar[i].selected = true;
-            }else{
+            } else {
                 ar[i].selected = false;
             }
         }
-        this.context.globalState.update(this.CACHE_KEY, ar)
+        this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
     private createID() {
@@ -74,7 +74,7 @@ export class ConversationDb {
             const index = parseInt(nowStr[i]);
             dateAr.push(str[index]);
         }
-        return `${ar.join('')}-${dateAr.join('')}`
+        return `${ar.join('')}-${dateAr.join('')}`;
     }
 
     public new() {
@@ -84,12 +84,12 @@ export class ConversationDb {
             selected: true,
             date: Date.now(),
             mode: 'code'
-        }
+        };
         data.id = this.createID();
         const ar = this.getAll();
         ar.push(data);
         this.context.globalState.update(this.CACHE_KEY, ar);
-        return data
+        return data;
     }
 
     public insert(data: ConversationDetails) {
@@ -97,11 +97,11 @@ export class ConversationDb {
         const ar = this.getAll();
         ar.push(data);
         this.context.globalState.update(this.CACHE_KEY, ar);
-        return data
+        return data;
     }
 
     public remove(id: string) {
-        const ar = this.getAll().filter(x => x.id != id);
+        const ar = this.getAll().filter(x => x.id !== id);
         this.context.globalState.update(this.CACHE_KEY, ar);
     }
 

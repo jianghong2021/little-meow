@@ -1,33 +1,32 @@
-interface ICatChatResult{
-    
+interface ICatChatResult {
+
 }
 
-type ChatDetailsRole = 'ai'|'user'
+type ChatDetailsRole = 'ai' | 'user'
 
-interface ChatDetails{
+interface ChatDetails {
     id: string
     conversationId: string
     title: string
-    done?: boolean
-    answer?: boolean
+    status: 'waiting' | 'answering' | 'ended'
     content: string
     date: number
     role: ChatDetailsRole
     fid: string
 }
 
-interface InitConfig{
+interface InitConfig {
     baseUrl: string
     isDark: boolean
     activeDocument?: string
     conversation: ConversationDetails
 }
 
-interface Window{
+interface Window {
     initConfig: InitConfig
 }
 
-interface MessageSendArg{
+interface MessageSendArg {
     prompt: string
     memory: string
     data: ChatDetails

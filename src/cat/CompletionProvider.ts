@@ -19,7 +19,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
         const depose = vscode.languages.registerInlineCompletionItemProvider(doc, provider);
         context.subscriptions.push(depose);
 
-        console.log('注册小喵喵补全')
+        console.log('注册小喵喵补全');
     }
     async provideInlineCompletionItems(
         document: vscode.TextDocument,
@@ -31,7 +31,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
 
         const now = Date.now();
         if (this.last > 0 && now - this.last < 300) {
-            return []
+            return [];
         }
 
         this.last = now;
@@ -43,7 +43,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
         const line = document.lineAt(position).text;
         const prex = line.substring(0, position.character);
         if (!prex.endsWith(this.keywords)) {
-            return list
+            return list;
         }
 
         const prompt = line.trim().replace(this.keywords, '').replaceAll(/[\/\\\#\*]/g, '');
@@ -51,7 +51,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
         this.grenrating = true;
 
         const lang = this.getDocumentLanguage(document);
-        console.log('正在生成: ',`编程语言：${lang}, ${prompt}`)
+        console.log('正在生成: ',`编程语言：${lang}, ${prompt}`);
         const text = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
             title: "正在生成代码...",
@@ -60,11 +60,11 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
 
             return this.model.code(`编程语言：${lang}, ${prompt}`);
         });
-        console.log(text)
-        const item = this.createInlineCompletionItem(text, position)
+
+        const item = this.createInlineCompletionItem(text, position);
         this.grenrating = false;
-        list.push(item)
-        return list
+        list.push(item);
+        return list;
     }
 
     private createInlineCompletionItem(text: string, position: vscode.Position): vscode.InlineCompletionItem {
@@ -74,11 +74,11 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
     }
 
     private getDocumentLanguage(document: vscode.TextDocument) {
-        if (document.languageId == 'vue') {
+        if (document.languageId === 'vue') {
             const isTS = document.getText().includes('lang="ts"');
-            return isTS ? 'typescript' : 'javascript'
+            return isTS ? 'typescript' : 'javascript';
         } else {
-            return document.languageId
+            return document.languageId;
         }
     }
 }

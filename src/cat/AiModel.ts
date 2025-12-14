@@ -4,16 +4,17 @@ import { DeepseekModel } from './models/DeepseekModel';
 import { ClaudeModel } from './models/ClaudeModel';
 import { ChatGptModel } from './models/ChatGptModel';
 
-export class AiModel {
+export class AiModel implements AiCommModel {
     private API_TOKEN = '';
     private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
     public model?: AiCommModel;
+    private lastGetAccount = 0;
 
     public async initConfig(context: vscode.ExtensionContext) {
         const now = Date.now();
         if (this.API_TOKEN && this.lastCheck > 0 && now - this.lastCheck < 1000 * 15) {
-            return
+            return;
         }
         this.lastCheck = now;
         const config = new ConfigDa(context);
@@ -28,18 +29,20 @@ export class AiModel {
         }
 
         this.MAX_CONTEXT_SIZE = this.model?.MAX_CONTEXT_SIZE || 0;
+
+        this.getAccountBalance();
     }
 
     public chat(prompt: string, snippet = '', memory = '') {
         if (!this.model) {
-            throw Error('Model not initialized')
+            throw Error('Model not initialized');
         }
         return this.model.chat(prompt, snippet, memory);
     }
 
     async sseChat(prompt: string, snippet?: string, memory?: string, onMsg?: (msg: string) => void) {
         if (!this.model) {
-            throw Error('Model not initialized')
+            throw Error('Model not initialized');
         }
 
         await this.model.sseChat(prompt, snippet, memory, onMsg);
@@ -47,9 +50,18 @@ export class AiModel {
 
     public code(prompt: string) {
         if (!this.model) {
-            throw Error('Model not initialized')
+            throw Error('Model not initialized');
         }
 
         return this.model.code(prompt);
+    }
+
+    public async getAccountBalance(){
+        const now = Date.now();
+        if (this.lastGetAccount > 0 && now - this.lastGetAccount < 5_000) {
+            return;
+        }
+        this.lastGetAccount = now;
+        this.model?.getAccountBalance();
     }
 }

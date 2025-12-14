@@ -3,21 +3,24 @@ import * as nls from 'vscode-nls';
 import { AiModel } from './AiModel';
 import { ConversationDb } from '../data/ConversationData';
 import { formatTimeAgo } from '../utils/date';
+import { ConfigDa } from '../data/ConfigDb';
 
 const localize = nls.loadMessageBundle();
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
-    static VIEW_ID = 'my-lovely-cat-view'
-    private context: vscode.ExtensionContext
-    public projects: ChatDetails[] = []
-    public webview?: vscode.WebviewView
+    static VIEW_ID = 'my-lovely-cat-view';
+    private context: vscode.ExtensionContext;
+    public projects: ChatDetails[] = [];
+    public webview?: vscode.WebviewView;
     public model = new AiModel();
+    public config: ConfigDa;
     constructor(context: vscode.ExtensionContext) {
-        this.context = context
+        this.context = context;
+        this.config = new ConfigDa(context);
     }
     static register(context: vscode.ExtensionContext) {
-        const provider = new ChatViewProvider(context)
-        const disposable = vscode.window.registerWebviewViewProvider(this.VIEW_ID, provider)
+        const provider = new ChatViewProvider(context);
+        const disposable = vscode.window.registerWebviewViewProvider(this.VIEW_ID, provider);
         context.subscriptions.push(disposable);
     }
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, token: vscode.CancellationToken): Thenable<void> | void {
@@ -31,29 +34,32 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const msgDispose = webviewView.webview.onDidReceiveMessage(e => {
             switch (e.type) {
                 case 'sendMessage':
-                    this.sendMessage(e.data)
-                    break
+                    this.sendMessage(e.data);
+                    break;
                 case 'setChatMode':
-                    this.setChatMode()
-                    break
+                    this.setChatMode();
+                    break;
+                case 'setModel':
+                    this.setModel(e.data);
+                    break;
                 case 'reload':
                     this.renderHtml();
-                    break
+                    break;
             }
-        })
+        });
 
-        webviewView.title = localize('view.chat.settings', 'hello')
+        webviewView.title = localize('view.chat.settings', 'hello');
 
         const editorDispose = vscode.window.onDidChangeActiveTextEditor((event) => {
             this.webview?.webview?.postMessage({
                 type: 'onDocumentChange',
                 data: event?.document.fileName
-            })
-        })
+            });
+        });
 
         const themeDispose = vscode.window.onDidChangeActiveColorTheme((evnt) => {
             webviewView.webview.html = this.getHtml(webviewView.webview);
-        })
+        });
 
         //内置命令
         const clearCommdDispose = vscode.commands.registerCommand('my-lovely-cat.clear', this.clearHistory.bind(this));
@@ -67,14 +73,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             editorDispose.dispose();
             newChatCommdDispose.dispose();
             historyCommdDispose.dispose();
-        })
+        });
 
     }
 
     private setChatMode() {
         const db = new ConversationDb(this.context);
         const conv = this.getConversation();
-        if (conv.mode != 'code') {
+        if (conv.mode !== 'code') {
             conv.mode = 'code';
         } else {
             conv.mode = 'norm';
@@ -83,10 +89,26 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this.renderHtml();
     }
 
+    private async setModel(val: string){
+        const [mType,mName] = val.split(' ');
+        if(!mType || !mName){
+            console.error('model err',mType,mName);
+            return;
+        }
+
+        const conf = this.config.data;
+        conf.model.name = mName as any;
+        conf.model.type = mType as any;
+
+        await this.config.saveConfig({...conf});
+
+        this.renderHtml();
+    }
+
     private async clearHistory() {
         const res = await vscode.window.showWarningMessage(localize('view.chat.clear', 'Clear Chat History'), {
             modal: true
-        }, 'Yes')
+        }, 'Yes');
         if (res !== undefined) {
             //删除当前聊天
             const db = new ConversationDb(this.context);
@@ -95,7 +117,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             this.webview?.webview?.postMessage({
                 type: 'clearHistory',
                 data: this.getConversation()
-            })
+            });
         }
     }
 
@@ -110,16 +132,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 label: x.title,
                 description: formatTimeAgo(x.date),
                 detail: x.id
-            }
-        })
+            };
+        });
 
         quickPick.onDidChangeSelection(selection => {
             if (selection[0]) {
-                const selected = data.find(x => x.id == selection[0].detail);
+                const selected = data.find(x => x.id === selection[0].detail);
                 if (selected) {
                     db.setActive(selected.id);
                     this.renderHtml();
-                    console.log('选择聊天', selected.title)
+                    console.log('选择聊天', selected.title);
                 }
 
                 quickPick.hide();
@@ -141,7 +163,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const db = new ConversationDb(this.context);
         db.new();
         this.renderHtml();
-        console.log('new chat')
+        console.log('new chat');
     }
 
     private async sendMessage(req: MessageSendArg) {
@@ -149,18 +171,19 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         const msg: ChatDetails = {
             ...data,
-            done: true
-        }
+            status: 'waiting'
+        };
 
         const db = new ConversationDb(this.context);
         const conv = db.one(msg.conversationId);
         if (!conv) {
             msg.content = '会话不存在!';
+            msg.status = 'ended';
             this.webview?.webview?.postMessage({
                 type: 'onPutMessage',
                 data: msg
-            })
-            return
+            });
+            return;
         }
         //合并当前打开文档
         let activeFile = '';
@@ -193,36 +216,35 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             const answer: ChatDetails = {
                 ...msg,
                 content: text
-            }
-
+            };
+            answer.status = 'answering';
             this.webview?.webview?.postMessage({
                 type: 'onAnswer',
                 data: answer
-            })
+            });
         }).then(() => {
-            msg.answer = true;
-            msg.done = true;
+            msg.status = 'ended';
             this.webview?.webview?.postMessage({
                 type: 'onPutMessage',
                 data: msg
-            })
+            });
         }).catch(err => {
-            msg.done = true;
+            msg.status = 'ended';
             msg.content = err.message || 'unknown error';
             this.webview?.webview?.postMessage({
                 type: 'onPutMessage',
                 data: msg
-            })
-        })
+            });
+        });
     }
 
     private getActiveFile() {
         if (!vscode.window.activeTextEditor?.document.fileName) {
-            return ''
+            return '';
         }
         const fileName = vscode.window.activeTextEditor.document.fileName.replaceAll(/\\/g, '/');
         if (fileName.endsWith('\\')) {
-            return fileName.substring(0, fileName.length - 1)
+            return fileName.substring(0, fileName.length - 1);
         } else {
             return fileName;
         }
@@ -232,7 +254,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const db = new ConversationDb(this.context);
         const res = db.latestOrSelected();
         if (res) {
-            return res
+            return res;
         }
         const conv: ConversationDetails = {
             id: '',
@@ -240,7 +262,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             date: Date.now(),
             selected: true,
             mode: 'code'
-        }
+        };
 
         return db.insert(conv);
     }
@@ -257,7 +279,18 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         const conversation = this.getConversation();
 
-        const modeIcon = conversation.mode == 'code' ? 'checked' : 'check';
+        const modeIcon = conversation.mode === 'code' ? 'checked' : 'check';
+
+        const conf = this.config.data;
+        const models: string[] = [];
+
+        this.config.models.forEach(m => {
+            models.push(`
+                <option value="${m.type} ${m.name}" ${(conf.model.type === m.type && conf.model.name === m.name) ? 'selected' : ''}>
+                ${m.label}
+                </option>
+            `);
+        });
 
         return `
         <!DOCTYPE html>
@@ -279,14 +312,22 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         </div>
         
         <div class="chat-input-container">
-            <div id="activeDocument" data-mode="${conversation.mode}">
+            <div id="activeDocument" data-mode="${conversation.mode}" style="display:${this.getActiveFile() ? 'flex' : 'none'}">
                 <span></span>
                 <img onclick="setChatMode()" src="${baseUrl}/icons/ic-${modeIcon}.svg"/>
             </div>
             <input type="text" id="message-input" placeholder="输入消息..." autocomplete="off">
-            <button id="send-button" disabled>
-                <img src="${baseUrl}/icons/send.svg"/>
-            </button>
+            
+            <div class="bottom-btns">
+                <div class="model-box">
+                    <select class="model-select" onchange="setModel(this.value)">
+                        ${models.join('\n')}
+                    </select>
+                </div>
+                <button id="send-button" disabled>
+                    <img src="${baseUrl}/icons/send.svg"/>
+                </button>
+            </div>
         </div>
     </div>
     <script>
@@ -300,6 +341,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     <script src="${baseUrl}/js/chat-cont.js"></script>
 </body>
 </html>
-        `
+        `;
     }
 }

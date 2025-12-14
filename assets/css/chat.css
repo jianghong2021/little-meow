@@ -166,6 +166,25 @@
      display: flex;
      gap: 8px;
      position: relative;
+     flex-direction: column;
+ }
+
+ .bottom-btns {
+     width: 100%;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+ }
+
+ .message .waiting {
+     overflow-x: hidden;
+ }
+
+ .waiting img {
+     display: inline-block;
+     width: 14px;
+     height: 14px;
+     animation: loading 2s infinite;
  }
 
  #activeDocument {
@@ -182,11 +201,11 @@
      gap: 3px;
  }
 
-  #activeDocument img{
-    cursor: pointer;
-    width: 13px;
-    height: 13px;
-  }
+ #activeDocument img {
+     cursor: pointer;
+     width: 13px;
+     height: 13px;
+ }
 
  #message-input {
      flex: 1;
@@ -205,24 +224,16 @@
  }
 
  #send-button {
-     padding: 4px 16px;
-     background-color: var(--button-bg);
-     color: var(--button-text);
-     border: none;
-     border-radius: 4px;
-     font-size: 13px;
-     font-weight: 600;
      cursor: pointer;
      transition: background-color 0.2s;
+     background: none;
+     border: none;
+     outline: none;
  }
 
  #send-button img {
      width: 18px;
      height: 18px;
- }
-
- #send-button:hover {
-     background-color: var(--button-hover);
  }
 
  #send-button:disabled {
@@ -241,27 +252,58 @@
  }
 
  pre {
-    position: relative;
-}
+     position: relative;
+ }
 
-.copy-btn {
-    position: absolute;
-    right: 8px;
-    top: 8px;
-    font-size: 12px;
-    padding: 4px 6px;
-    background: #eee;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-}
+ .copy-btn {
+     position: absolute;
+     right: 8px;
+     top: 8px;
+     font-size: 12px;
+     padding: 4px 6px;
+     background: #eee;
+     border: 1px solid #ccc;
+     border-radius: 4px;
+     cursor: pointer;
+ }
 
-.copy-btn:hover {
-    background: #ddd;
-}
+ .copy-btn:hover {
+     background: #ddd;
+ }
+
+ .model-box{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+ }
+
+ .model-select {
+     background: transparent;
+     border: none;
+     outline: none;
+     padding: 0;
+     margin: 0;
+     color: var(--text-color);
+ }
+
+ .model-select option {
+     background: var(--bg-color);
+     color: var(--text-color);
+     padding: 8px;
+ }
 
  @media screen and (max-width: 260px) {
      #send-button {
          display: none;
+     }
+ }
+
+ @keyframes loading {
+     from {
+         transform: rotate(0deg);
+     }
+
+     to {
+         transform: rotate(360deg);
      }
  }

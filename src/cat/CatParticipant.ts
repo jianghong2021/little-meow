@@ -23,6 +23,6 @@ export class CatParticipant {
         } catch (err: any) {
             stream.markdown(err.message || 'unknown error');
         }
-        return request
+        return request;
     }
 }

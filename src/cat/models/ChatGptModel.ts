@@ -10,11 +10,11 @@ export class ChatGptModel implements AiCommModel{
 
     }
     chat<T>(prompt: string, snippet?: string, memory?: string){
-        return '' as T
+        return '' as T;
     }
     async code(prompt: string){
 
-        return ''
+        return '';
     }
 
     async sseChat(prompt: string, snippet?: string, memory?: string,onMsg?:(msg: string)=>void){

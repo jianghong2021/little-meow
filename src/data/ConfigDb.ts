@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 export class ConfigDa {
-    private CACHE_KEY = 'chat-config'
+    private CACHE_KEY = 'chat-config';
     private context: vscode.ExtensionContext;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -11,19 +11,19 @@ export class ConfigDa {
         {
             type: 'deepseek',
             name: 'deepseek-chat',
-            label: 'chat'
+            label: 'deepseek-chat'
         },
         {
             type: 'deepseek',
             name: 'deepseek-reasoner',
-            label: 'reasoner'
+            label: 'deepseek-reasoner'
         }
-    ]
+    ];
 
     public get data() {
         const cache = this.context.globalState.get(this.CACHE_KEY);
         if (cache) {
-            return cache as ChatConfig
+            return cache as ChatConfig;
         }
         const conf: ChatConfig = {
             mode: 'norm',
@@ -32,12 +32,12 @@ export class ConfigDa {
                 name: 'deepseek-chat',
                 label: 'chat'
             }
-        }
+        };
         return conf;
     }
 
-    public saveConfig(conf: ChatConfig) {
-        this.context.globalState.update(this.CACHE_KEY, conf);
+    public async saveConfig(conf: ChatConfig) {
+        await this.context.globalState.update(this.CACHE_KEY, conf);
     }
 
     public setToken(token: string){

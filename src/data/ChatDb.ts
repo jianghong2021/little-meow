@@ -5,7 +5,7 @@ export class ChatDb {
     private TABLE = 'chats';
     public async init() {
         if (await tableExists(this.TABLE)) {
-            return
+            return;
         }
         db.version(1).stores({
             chats: '&id, title,conversationId, done,content,date,role,fid, [conversationId+date]'
@@ -22,24 +22,24 @@ export class ChatDb {
             .reverse()
             .limit(50)
             .toArray();
-        const ar = res.sort((a, b) => a.date - b.date)
-        return ar
+        const ar = res.sort((a, b) => a.date - b.date);
+        return ar;
     }
 
     public async getHistory(date: number) {
         const res: ChatDetails[] = await db.table(this.TABLE)
             .where('date')
             .below(date)
-            .filter(x => x.role == 'user')
+            .filter(x => x.role === 'user')
             .limit(20)
             .toArray();
 
-        return res
+        return res;
     }
 
     public async one(id: string) {
         const res = await db.table(this.TABLE).get(id);
-        return res as ChatDetails | undefined
+        return res as ChatDetails | undefined;
     }
 
     public async addOrUpdate(data: ChatDetails) {
@@ -52,7 +52,7 @@ export class ChatDb {
     }
 
     public async insert(data: ChatDetails) {
-        await db.table(this.TABLE).add(data)
+        await db.table(this.TABLE).add(data);
     }
 
     public async update(id: string, data: ChatDetails) {
@@ -60,13 +60,13 @@ export class ChatDb {
     }
 
     public async remove(id: string) {
-        await db.table(this.TABLE).delete(id)
+        await db.table(this.TABLE).delete(id);
     }
 
     public async clear(id: string) {
         await db.table(this.TABLE)
             .where('conversationId')
             .equals(id)
-            .delete()
+            .delete();
     }
 }
