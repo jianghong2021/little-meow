@@ -63,6 +63,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         //内置命令
         const clearCommdDispose = vscode.commands.registerCommand('my-lovely-cat.clear', this.clearHistory.bind(this));
+        const clearAllCommdDispose = vscode.commands.registerCommand('my-lovely-cat.clearAll', this.clearAllHistory.bind(this));
         const historyCommdDispose = vscode.commands.registerCommand('my-lovely-cat.history', this.openHistory.bind(this));
         const newChatCommdDispose = vscode.commands.registerCommand('my-lovely-cat.new', this.newChat.bind(this));
 
@@ -70,6 +71,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             msgDispose.dispose();
             themeDispose.dispose();
             clearCommdDispose.dispose();
+            clearAllCommdDispose.dispose();
             editorDispose.dispose();
             newChatCommdDispose.dispose();
             historyCommdDispose.dispose();
@@ -116,6 +118,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             db.remove(conv.id);
             this.webview?.webview?.postMessage({
                 type: 'clearHistory',
+                data: this.getConversation()
+            });
+        }
+    }
+
+    private async clearAllHistory(){
+        const res = await vscode.window.showWarningMessage(localize('view.chat.clear', 'Clear Chat History'), {
+            modal: true
+        }, 'Yes');
+        if (res !== undefined) {
+            //删除全部聊天
+            const db = new ConversationDb(this.context);
+            db.removeAll();
+            this.webview?.webview?.postMessage({
+                type: 'clearAllHistory',
                 data: this.getConversation()
             });
         }
@@ -212,7 +229,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         conv.title = prompt;
         db.update(msg.conversationId, conv);
 
-        this.model.sseChat(prompt, activeFile, memory, text => {
+        const modalMemory = memory.map(x=>{
+            const m:GeneralMessage = {
+                role: x.role,
+                content: x.content
+            }
+            return m
+        })
+        this.model.sseChat(prompt, activeFile, modalMemory, text => {
             const answer: ChatDetails = {
                 ...msg,
                 content: text
@@ -235,6 +259,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 type: 'onPutMessage',
                 data: msg
             });
+            console.error(err)
         });
     }
 

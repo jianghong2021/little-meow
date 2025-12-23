@@ -35,6 +35,8 @@ function onmessage(e: MessageEvent) {
         case 'clearHistory':
             clearHistory()
             break
+        case 'clearAllHistory':
+            clearAllHistory()
         case 'onDocumentChange':
             onDocumentChange(data)
     }
@@ -51,16 +53,20 @@ function onDocumentChange(file?: string) {
     activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 
     console.log(file)
-    if(file){
+    if (file) {
         activeDocumentBox.style.display = 'flex';
-    }else{
+    } else {
         activeDocumentBox.style.display = 'none';
     }
 }
 
 function clearHistory() {
     chatDb.clear(window.initConfig.conversation.id);
+    vscode.postMessage({ type: 'reload', data: undefined });
+}
 
+function clearAllHistory(){
+    chatDb.clear(window.initConfig.conversation.id);
     vscode.postMessage({ type: 'reload', data: undefined });
 }
 
@@ -74,7 +80,7 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
         msgDiv.innerHTML = `
         <div class="msg">${text}</div>
         <div class="message-footer">
-            <div class="btn-icon" style="display:${msg.role == 'ai' ? 'flex' : 'none'}">
+            <div class="btn-icon" style="display:${msg.role == 'assistant' ? 'flex' : 'none'}">
                 <img src="${window.initConfig.baseUrl}/icons/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
                 <img src="${window.initConfig.baseUrl}/icons/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
             </div>
@@ -142,7 +148,7 @@ function onPutMessage(msg: ChatDetails, reset = true) {
             msgDiv.innerHTML = `
         <div class="msg">${text}</div>
         <div class="message-footer" style="display:${msg.status === 'ended' ? 'flex' : 'none'}">
-            <div class="btn-icon" style="display:${msg.role == 'ai' ? 'flex' : 'none'}">
+            <div class="btn-icon" style="display:${msg.role == 'assistant' ? 'flex' : 'none'}">
                 <img src="${window.initConfig.baseUrl}/icons/copy${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="copyMsgContent(this,'${msg.id}')"/>
                 <img src="${window.initConfig.baseUrl}/icons/refresh${window.initConfig.isDark ? '-dark' : ''}.svg" onclick="reSendMessage('${msg.id}','${msg.fid}')"/>
             </div>
@@ -195,10 +201,8 @@ async function copyMsgContent(img: HTMLElement, id: string) {
 }
 
 //获取历史记忆
-async function getMemory(date: number) {
-    const ar = await chatDb.getHistory(date);
-    const temp = ar.map(a => a.content);
-    return temp.join('|')
+function getMemory(id: string, date: number) {
+    return chatDb.getHistory(window.initConfig.conversation.id, id, date);
 }
 
 //重新发送信息
@@ -225,8 +229,10 @@ async function reSendMessage(id: string, fid: string) {
     const arg: MessageSendArg = {
         data: newAiMsg,
         prompt: userMsg.content,
-        memory: await getMemory(aiMsg.date),
+        memory: await getMemory(userMsg.id,aiMsg.date),
     }
+
+    console.log(arg)
 
     updateStatusMsgs(newAiMsg);
     vscode.postMessage({ type: 'sendMessage', data: arg });
@@ -261,7 +267,7 @@ async function sendMessage() {
         status: 'waiting',
         content: '',
         date: Date.now(),
-        role: "ai",
+        role: "assistant",
         fid: userMsg.id,
         conversationId: window.initConfig.conversation.id
     }
@@ -272,8 +278,10 @@ async function sendMessage() {
     const arg: MessageSendArg = {
         data: aiMsg,
         prompt: messageText,
-        memory: await getMemory(aiMsg.date),
+        memory: await getMemory(userMsg.id,aiMsg.date),
     }
+
+    console.log(arg)
 
     //进入本地
     state.data.push(aiMsg);
@@ -317,7 +325,7 @@ function setChatMode() {
     vscode.postMessage({ type: 'setChatMode', data: undefined });
 }
 
-function setModel(val:string){
+function setModel(val: string) {
     vscode.postMessage({ type: 'setModel', data: val });
 }
 

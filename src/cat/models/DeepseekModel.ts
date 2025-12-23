@@ -30,29 +30,30 @@ export class DeepseekModel implements AiCommModel {
         this.getAccountBalance();
     }
 
-    public async request(prompt: string, snippet = '', memory = ''): Promise<string> {
+    public async request(prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
         if (!this.API_TOKEN) {
             throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
         }
+        const body = JSON.stringify({
+            "model": "deepseek-chat",
+            "temperature": DeepseekTemperature.CODE,
+            "max_tokens": 8192,
+            "messages": [
+                { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上emoji" },
+                { "role": "system", "content": '回答问题时，注意内容简练，尽可能的简短，不要过多不必要的赘述' },
+                { "role": "system", "content": snippet },
+                ...memory,
+                { "role": "user", "content": prompt }
+            ],
+            "stream": false
+        });
         const res = await fetch(`${this.API_URL}/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + this.API_TOKEN
             },
-            body: JSON.stringify({
-                "model": "deepseek-chat",
-                "temperature": DeepseekTemperature.CODE,
-                "max_tokens": 8192,
-                "messages": [
-                    { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上emoji" },
-                    { "role": "system", "content": '回答问题时，注意内容简练，尽可能的简短，不要过多不必要的赘述' },
-                    { "role": "system", "content": snippet },
-                    { "role": "system", "content": `用户历史提问(|分割): ${memory}` },
-                    { "role": "user", "content": prompt }
-                ],
-                "stream": false
-            })
+            body
         });
         const data: any = await res.json();
         if (!data.choices[0]) {
@@ -62,29 +63,33 @@ export class DeepseekModel implements AiCommModel {
         return code;
     }
 
-    public async requestSSE(prompt: string, snippet = '', memory = '') {
+    public async requestSSE(prompt: string, snippet = '', memory: GeneralMessage[] = []) {
         if (!this.API_TOKEN) {
             throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
         }
+        const body = JSON.stringify({
+            "model": "deepseek-chat",
+            "temperature": DeepseekTemperature.CODE,
+            "max_tokens": 8192,
+            "thinking": {
+                "type": "disabled"
+            },
+            "messages": [
+                { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上心情emoji" },
+                { "role": "system", "content": '回答问题时，内容简练，不要过多不必要的赘述' },
+                { "role": "system", "content": snippet },
+                ...memory,
+                { "role": "user", "content": prompt }
+            ],
+            "stream": true
+        });
         const res = await fetch(`${this.API_URL}/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + this.API_TOKEN
             },
-            body: JSON.stringify({
-                "model": "deepseek-chat",
-                "temperature": DeepseekTemperature.CODE,
-                "max_tokens": 8192,
-                "messages": [
-                    { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上emoji" },
-                    { "role": "system", "content": '回答问题时，注意内容简练，尽可能的简短，不要过多不必要的赘述' },
-                    { "role": "system", "content": snippet },
-                    { "role": "system", "content": `用户历史提问(|分割): ${memory}` },
-                    { "role": "user", "content": prompt }
-                ],
-                "stream": true
-            })
+            body
         });
         const stream = res.body?.getReader();
         if (!stream) {
@@ -150,15 +155,15 @@ export class DeepseekModel implements AiCommModel {
         vscode.window.setStatusBarMessage(text);
     }
 
-    chat(prompt: string, snippet?: string, memory?: string) {
-        return this.request(prompt,snippet,memory);
+    chat(prompt: string, snippet?: string, memory?: GeneralMessage[]) {
+        return this.request(prompt, snippet, memory);
     }
     async code(prompt: string) {
 
         return this.getCode(prompt);
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: string, onMsg?: (msg: string) => void) {
+    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[], onMsg?: (msg: string) => void) {
         if (!onMsg) {
             return;
         }
@@ -183,7 +188,10 @@ export class DeepseekModel implements AiCommModel {
                     continue;
                 }
                 const line = s.replace(/data\:\s?/i, '');
-                const data: ChatResponse = JSON.parse(line);
+                const data = JSON.parse(line);
+                if (data['error']) {
+                    throw Error(data['error']['message'] || 'unknown error')
+                }
                 if (!data.choices[0]) {
                     continue;
                 }

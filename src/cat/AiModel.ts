@@ -33,14 +33,14 @@ export class AiModel implements AiCommModel {
         this.getAccountBalance();
     }
 
-    public chat(prompt: string, snippet = '', memory = '') {
+    public chat(prompt: string, snippet = '', memory?:GeneralMessage[]) {
         if (!this.model) {
             throw Error('Model not initialized');
         }
         return this.model.chat(prompt, snippet, memory);
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: string, onMsg?: (msg: string) => void) {
+    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[], onMsg?: (msg: string) => void) {
         if (!this.model) {
             throw Error('Model not initialized');
         }

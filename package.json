@@ -66,6 +66,14 @@
         }
       },
       {
+        "command": "my-lovely-cat.clearAll",
+        "title": "%view.chat.clearAll%",
+        "icon": {
+          "dark": "assets/icons/clear-dark.svg",
+          "light": "assets/icons/clear.svg"
+        }
+      },
+      {
         "command": "my-lovely-cat.history",
         "title": "%view.chat.history%",
         "icon": {
@@ -117,6 +125,11 @@
         },
         {
           "command": "my-lovely-cat.clear",
+          "when": "view == my-lovely-cat-view",
+          "group": "chat"
+        },
+        {
+          "command": "my-lovely-cat.clearAll",
           "when": "view == my-lovely-cat-view",
           "group": "chat"
         },

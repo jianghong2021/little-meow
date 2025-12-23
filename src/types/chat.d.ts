@@ -1,8 +1,4 @@
-interface ICatChatResult {
-
-}
-
-type ChatDetailsRole = 'ai' | 'user'
+type GeneralMessageRole = 'system' | 'user' | 'assistant' | 'tool'
 
 interface ChatDetails {
     id: string
@@ -11,8 +7,15 @@ interface ChatDetails {
     status: 'waiting' | 'answering' | 'ended'
     content: string
     date: number
-    role: ChatDetailsRole
+    role: GeneralMessageRole
     fid: string
+}
+
+
+
+interface GeneralMessage {
+    role: GeneralMessageRole
+    content: string
 }
 
 interface InitConfig {
@@ -28,6 +31,6 @@ interface Window {
 
 interface MessageSendArg {
     prompt: string
-    memory: string
+    memory: ChatDetails[]
     data: ChatDetails
 }

@@ -5,11 +5,11 @@ interface AiCommModel {
     /**最大上下文 */
     MAX_CONTEXT_SIZE: number
     /**普通聊天 */
-    chat: (prompt: string, snippet?: string, memory?: string) => Promise<string>
+    chat: (prompt: string, snippet?: string, memory?: GeneralMessage[]) => Promise<string>
     /**sse聊天，流式 */
-    sseChat: (prompt: string, snippet?: string, memory?: string,onMsg?:(msg: string)=>void) => Promise<void>
+    sseChat: (prompt: string, snippet?: string, memory?: GeneralMessage[], onMsg?: (msg: string) => void) => Promise<void>
     /**生成代码 */
     code: (prompt: string) => Promise<string>
     /**API账户余额 */
-    getAccountBalance: ()=>Promise<void>
+    getAccountBalance: () => Promise<void>
 }

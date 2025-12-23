@@ -15,7 +15,7 @@ export class CatParticipant {
         context: vscode.ChatContext,
         stream: vscode.ChatResponseStream,
         token: vscode.CancellationToken
-    ): Promise<ICatChatResult> {
+    ): Promise<any> {
         stream.progress('Thinking...');
         try {
             const res = await this.model.chat(request.prompt);

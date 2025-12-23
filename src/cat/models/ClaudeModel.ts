@@ -8,7 +8,7 @@ export class ClaudeModel implements AiCommModel{
     async getAccountBalance(){
 
     }
-    chat<T>(prompt: string, snippet?: string, memory?: string){
+    chat<T>(prompt: string, snippet?: string, memory?: GeneralMessage[]){
         return '' as T;
     }
     
@@ -17,7 +17,7 @@ export class ClaudeModel implements AiCommModel{
         return '';
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: string,onMsg?:(msg: string)=>void){
+    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[],onMsg?:(msg: string)=>void){
         
     }
 

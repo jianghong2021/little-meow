@@ -26,12 +26,12 @@ export class ChatDb {
         return ar;
     }
 
-    public async getHistory(date: number) {
+    public async getHistory(conversationId: string,id:string, date: number, max = 6) {
         const res: ChatDetails[] = await db.table(this.TABLE)
             .where('date')
             .below(date)
-            .filter(x => x.role === 'user')
-            .limit(20)
+            .filter(x => x.conversationId == conversationId && x.id != id)
+            .limit(max)
             .toArray();
 
         return res;
@@ -68,5 +68,9 @@ export class ChatDb {
             .where('conversationId')
             .equals(id)
             .delete();
+    }
+
+    public async clearAll(){
+        await db.table(this.TABLE).clear()
     }
 }

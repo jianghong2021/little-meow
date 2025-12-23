@@ -105,6 +105,10 @@ export class ConversationDb {
         this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
+    public removeAll() {
+        this.context.globalState.update(this.CACHE_KEY, []);
+    }
+
     public clear() {
         this.context.globalState.update(this.CACHE_KEY, undefined);
     }
