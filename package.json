@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license":"MIT",
   "engines": {
     "vscode": "^1.106.1"
@@ -19,7 +19,8 @@
     "AI Code",
     "聊天",
     "编程",
-    "小喵喵"
+    "小喵喵",
+    "Deepseek"
   ],
   "author": {
     "name": "web探险家",

@@ -181,11 +181,17 @@ function onPutMessage(msg: ChatDetails, reset = true) {
             <img src="${window.initConfig.baseUrl}/icons/loading${window.initConfig.isDark ? '-dark' : ''}.svg"/>
         </div>`;
         } else {
+            let thinking = '';
+            if (msg.reasoningContent) {
+                thinking = `
+                <details class="msg-reasoning">
+                    <summary>AI思考</summary>
+                    ${msg.reasoningContent}
+                </details>
+            `
+            }
             msgDiv.innerHTML = `
-            <details class="msg-reasoning" open="true">
-            <summary>AI思考</summary>
-            ${msg.reasoningContent}
-        </details>
+            ${thinking}
             <div class="msg">${text}</div>
         `;
         }

@@ -130,7 +130,7 @@
      border-top-right-radius: 0;
  }
 
- .message.ai {
+ .message.assistant {
      background-color: var(--message-ai-bg);
      color: var(--message-ai-text);
      align-self: flex-start;

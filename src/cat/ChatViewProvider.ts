@@ -345,7 +345,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 <body>
     <div class="chat-container">
         <div class="chat-messages" id="chat-messages">
-            <div class="message ai">
+            <div class="message assistant">
                 您好！我是您的AI助手，有什么可以帮您的吗？
                 <div class="message-time">刚刚</div>
             </div>
