@@ -6,16 +6,20 @@ interface ChatDetails {
     title: string
     status: 'waiting' | 'answering' | 'ended'
     content: string
+    reasoningContent?: string
     date: number
     role: GeneralMessageRole
     fid: string
 }
 
-
-
 interface GeneralMessage {
     role: GeneralMessageRole
     content: string
+}
+
+interface SseGeneralMessage{
+    content: string
+    reasoningContent?: string
 }
 
 interface InitConfig {

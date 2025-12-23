@@ -99,10 +99,16 @@
 
  }
 
- .message .msg {
+ .message .msg,
+ .msg-reasoning {
      width: 100%;
      word-break: break-all;
      overflow-x: auto;
+ }
+
+ .message .msg-reasoning {
+     font-size: 10px;
+     color: #577981;
  }
 
  @keyframes fadeIn {
@@ -207,6 +213,22 @@
      height: 13px;
  }
 
+ .thinking {
+     display: flex;
+     align-items: center;
+     cursor: pointer;
+ }
+
+ .thinking-ac {
+     color: #1ecb94;
+ }
+
+ .thinking img {
+     cursor: pointer;
+     width: 13px;
+     height: 13px;
+ }
+
  #message-input {
      flex: 1;
      padding: 8px 12px;
@@ -217,6 +239,7 @@
      font-size: 13px;
      outline: none;
      transition: border-color 0.2s;
+     resize: none;
  }
 
  #message-input:focus {
@@ -271,10 +294,10 @@
      background: #ddd;
  }
 
- .model-box{
-    display: flex;
-    align-items: center;
-    gap: 4px;
+ .model-box {
+     display: flex;
+     align-items: center;
+     gap: 4px;
  }
 
  .model-select {

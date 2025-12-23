@@ -13,7 +13,8 @@ hljs.registerLanguage('javascript', javascript);
 const chatDb = new ChatDb();
 
 const state = {
-    data: [] as ChatDetails[]
+    data: [] as ChatDetails[],
+    answering: false,
 }
 
 // 获取DOM元素
@@ -65,7 +66,7 @@ function clearHistory() {
     vscode.postMessage({ type: 'reload', data: undefined });
 }
 
-function clearAllHistory(){
+function clearAllHistory() {
     chatDb.clear(window.initConfig.conversation.id);
     vscode.postMessage({ type: 'reload', data: undefined });
 }
@@ -77,7 +78,17 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
     msgDiv.setAttribute('data-id', msg.id);
     const text = marked.parse(msg.content);
     if (msg.status === 'ended') {
+        let thinking = '';
+        if (msg.reasoningContent) {
+            thinking = `
+                <details class="msg-reasoning">
+                    <summary>AI思考</summary>
+                    ${msg.reasoningContent}
+                </details>
+            `
+        }
         msgDiv.innerHTML = `
+        ${thinking}
         <div class="msg">${text}</div>
         <div class="message-footer">
             <div class="btn-icon" style="display:${msg.role == 'assistant' ? 'flex' : 'none'}">
@@ -99,8 +110,6 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
     if (!onlyRender) {
         chatDb.insert(msg);
     }
-
-    scrollToBottom();
 
     hljs.highlightAll();
 }
@@ -134,6 +143,7 @@ function onServerPutMessage(msg: ChatDetails) {
     }
     m.status = msg.status;
     state.data.splice(index, 1, m);
+    state.answering = false;
     onPutMessage(m, true);
 }
 
@@ -145,7 +155,17 @@ function onPutMessage(msg: ChatDetails, reset = true) {
         msgDiv.setAttribute('data-done', msg.status);
 
         if (msg.status === 'ended') {
+            let thinking = '';
+            if (msg.reasoningContent) {
+                thinking = `
+                <details class="msg-reasoning">
+                    <summary>AI思考</summary>
+                    ${msg.reasoningContent}
+                </details>
+            `
+            }
             msgDiv.innerHTML = `
+        ${thinking}
         <div class="msg">${text}</div>
         <div class="message-footer" style="display:${msg.status === 'ended' ? 'flex' : 'none'}">
             <div class="btn-icon" style="display:${msg.role == 'assistant' ? 'flex' : 'none'}">
@@ -161,7 +181,13 @@ function onPutMessage(msg: ChatDetails, reset = true) {
             <img src="${window.initConfig.baseUrl}/icons/loading${window.initConfig.isDark ? '-dark' : ''}.svg"/>
         </div>`;
         } else {
-            msgDiv.innerHTML = `<div class="msg">${text}</div>`;
+            msgDiv.innerHTML = `
+            <details class="msg-reasoning" open="true">
+            <summary>AI思考</summary>
+            ${msg.reasoningContent}
+        </details>
+            <div class="msg">${text}</div>
+        `;
         }
 
         hljs.highlightAll();
@@ -177,12 +203,19 @@ function onPutMessage(msg: ChatDetails, reset = true) {
         messageInput.removeAttribute('disabled');
     }
 
+    scrollToBottom()
+
 }
 
 function onAnswer(msg: ChatDetails) {
     const index = state.data.findIndex(x => x.id == msg.id);
     const newMsg = state.data[index] || msg;
     newMsg.content += msg.content;
+
+    if (msg.reasoningContent) {
+        newMsg.reasoningContent += msg.reasoningContent;
+    }
+
     newMsg.status = msg.status;
     state.data.splice(index, 1, newMsg);
     onPutMessage(newMsg);
@@ -207,6 +240,9 @@ function getMemory(id: string, date: number) {
 
 //重新发送信息
 async function reSendMessage(id: string, fid: string) {
+    if(state.answering){
+        return
+    }
     const userMsg = await chatDb.one(fid);
     const aiMsg = await chatDb.one(id);
     if (!userMsg || !aiMsg) {
@@ -216,6 +252,7 @@ async function reSendMessage(id: string, fid: string) {
     if (!msgDiv) {
         return
     }
+    state.answering = true;
     msgDiv.setAttribute('data-done', '0');
 
     sendButton.setAttribute('disabled', 'true');
@@ -224,12 +261,13 @@ async function reSendMessage(id: string, fid: string) {
     const newAiMsg = { ...aiMsg };
 
     newAiMsg.content = '';
+    newAiMsg.reasoningContent = '';
     newAiMsg.status = 'waiting';
 
     const arg: MessageSendArg = {
         data: newAiMsg,
         prompt: userMsg.content,
-        memory: await getMemory(userMsg.id,aiMsg.date),
+        memory: await getMemory(userMsg.id, aiMsg.date),
     }
 
     console.log(arg)
@@ -244,6 +282,7 @@ async function reSendMessage(id: string, fid: string) {
 async function sendMessage() {
     const messageText = messageInput.value.trim();
     if (!messageText) return;
+    state.answering = true
     sendButton.setAttribute('disabled', 'true');
     messageInput.setAttribute('disabled', 'true');
     // 用户消息
@@ -278,7 +317,7 @@ async function sendMessage() {
     const arg: MessageSendArg = {
         data: aiMsg,
         prompt: messageText,
-        memory: await getMemory(userMsg.id,aiMsg.date),
+        memory: await getMemory(userMsg.id, aiMsg.date),
     }
 
     console.log(arg)
@@ -322,11 +361,24 @@ function addCopyButtonForCode() {
 
 // 设置聊天模式
 function setChatMode() {
+    if(state.answering){
+        return
+    }
     vscode.postMessage({ type: 'setChatMode', data: undefined });
 }
 
 function setModel(val: string) {
+    if(state.answering){
+        return
+    }
     vscode.postMessage({ type: 'setModel', data: val });
+}
+
+function setChatThinking(){
+    if(state.answering){
+        return
+    }
+    vscode.postMessage({ type: 'setChatThinking', data: undefined });
 }
 
 // 事件监听
@@ -351,6 +403,7 @@ window.addEventListener('load', () => {
 (window as any)['copyMsgContent'] = copyMsgContent;
 (window as any)['setChatMode'] = setChatMode;
 (window as any)['setModel'] = setModel;
+(window as any)['setChatThinking'] = setChatThinking;
 
 activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 

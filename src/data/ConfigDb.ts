@@ -11,12 +11,12 @@ export class ConfigDa {
         {
             type: 'deepseek',
             name: 'deepseek-chat',
-            label: 'deepseek-chat'
+            label: '聊天'
         },
         {
             type: 'deepseek',
             name: 'deepseek-reasoner',
-            label: 'deepseek-reasoner'
+            label: '推理'
         }
     ];
 
@@ -27,6 +27,7 @@ export class ConfigDa {
         }
         const conf: ChatConfig = {
             mode: 'norm',
+            thinking: false,
             model: {
                 type: 'deepseek',
                 name: 'deepseek-chat',

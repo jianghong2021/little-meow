@@ -14,6 +14,15 @@ export class DeepseekModel implements AiCommModel {
     private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
 
+    public thinking = {
+        enabled: {
+            type: 'enabled'
+        },
+        disabled: {
+            type: 'disabled'
+        }
+    }
+
     constructor(token: string) {
         this.API_TOKEN = token;
     }
@@ -63,7 +72,7 @@ export class DeepseekModel implements AiCommModel {
         return code;
     }
 
-    public async requestSSE(prompt: string, snippet = '', memory: GeneralMessage[] = []) {
+    public async requestSSE(prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
         if (!this.API_TOKEN) {
             throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
         }
@@ -71,9 +80,7 @@ export class DeepseekModel implements AiCommModel {
             "model": "deepseek-chat",
             "temperature": DeepseekTemperature.CODE,
             "max_tokens": 8192,
-            "thinking": {
-                "type": "disabled"
-            },
+            "thinking": thinking ? this.thinking.enabled : this.thinking.disabled,
             "messages": [
                 { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上心情emoji" },
                 { "role": "system", "content": '回答问题时，内容简练，不要过多不必要的赘述' },
@@ -163,11 +170,11 @@ export class DeepseekModel implements AiCommModel {
         return this.getCode(prompt);
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[], onMsg?: (msg: string) => void) {
+    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
         if (!onMsg) {
             return;
         }
-        const stream = await this.requestSSE(prompt, snippet, memory);
+        const stream = await this.requestSSE(prompt, snippet, memory, thinking);
 
         const decoder = new TextDecoder();
         while (true) {
@@ -195,8 +202,13 @@ export class DeepseekModel implements AiCommModel {
                 if (!data.choices[0]) {
                     continue;
                 }
-
-                onMsg(data.choices[0].delta.content);
+                const cont = data.choices[0].delta.content || '';
+                const reasoning = data.choices[0].delta.reasoning_content || ''
+                const m: SseGeneralMessage = {
+                    content: cont,
+                    reasoningContent: reasoning
+                }
+                onMsg(m);
             }
 
         }

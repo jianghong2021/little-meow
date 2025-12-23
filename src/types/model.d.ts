@@ -7,7 +7,7 @@ interface AiCommModel {
     /**普通聊天 */
     chat: (prompt: string, snippet?: string, memory?: GeneralMessage[]) => Promise<string>
     /**sse聊天，流式 */
-    sseChat: (prompt: string, snippet?: string, memory?: GeneralMessage[], onMsg?: (msg: string) => void) => Promise<void>
+    sseChat: (prompt: string, snippet?: string, memory?: GeneralMessage[], thinking?:boolean, onMsg?: (msg: SseGeneralMessage) => void) => Promise<void>
     /**生成代码 */
     code: (prompt: string) => Promise<string>
     /**API账户余额 */

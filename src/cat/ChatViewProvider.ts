@@ -42,6 +42,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'setModel':
                     this.setModel(e.data);
                     break;
+                case 'setChatThinking':
+                    this.setChatThinking();
+                    break;
                 case 'reload':
                     this.renderHtml();
                     break;
@@ -88,6 +91,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             conv.mode = 'norm';
         }
         db.update(conv.id, conv);
+        this.renderHtml();
+    }
+
+    private async setChatThinking(){
+
+        const conf = this.config.data;
+        conf.thinking = !conf.thinking;
+
+        await this.config.saveConfig({...conf});
+
         this.renderHtml();
     }
 
@@ -236,10 +249,11 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             }
             return m
         })
-        this.model.sseChat(prompt, activeFile, modalMemory, text => {
+        this.model.sseChat(prompt, activeFile, modalMemory, this.config.data.thinking, data => {
             const answer: ChatDetails = {
                 ...msg,
-                content: text
+                content: data.content,
+                reasoningContent: data.reasoningContent
             };
             answer.status = 'answering';
             this.webview?.webview?.postMessage({
@@ -305,6 +319,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const conversation = this.getConversation();
 
         const modeIcon = conversation.mode === 'code' ? 'checked' : 'check';
+        const thinkingIcon = this.config.data.thinking ? 'thinking-1' : 'thinking-0';
 
         const conf = this.config.data;
         const models: string[] = [];
@@ -341,14 +356,19 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 <span></span>
                 <img onclick="setChatMode()" src="${baseUrl}/icons/ic-${modeIcon}.svg"/>
             </div>
-            <input type="text" id="message-input" placeholder="输入消息..." autocomplete="off">
+            <textarea type="text" id="message-input" placeholder="我需要做些什么呢?" autocomplete="off" row="2"></textarea>
             
             <div class="bottom-btns">
                 <div class="model-box">
                     <select class="model-select" onchange="setModel(this.value)">
                         ${models.join('\n')}
                     </select>
+                    <div class="thinking ${this.config.data.thinking?'thinking-ac':''}" onclick="setChatThinking()">
+                        <span>思考</span>
+                        <img src="${baseUrl}/icons/ic-${thinkingIcon}.svg"/>
+                    </div>
                 </div>
+                
                 <button id="send-button" disabled>
                     <img src="${baseUrl}/icons/send.svg"/>
                 </button>

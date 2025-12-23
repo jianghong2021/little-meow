@@ -40,12 +40,12 @@ export class AiModel implements AiCommModel {
         return this.model.chat(prompt, snippet, memory);
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[], onMsg?: (msg: string) => void) {
+    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false, onMsg?: (msg: SseGeneralMessage) => void) {
         if (!this.model) {
             throw Error('Model not initialized');
         }
 
-        await this.model.sseChat(prompt, snippet, memory, onMsg);
+        await this.model.sseChat(prompt, snippet, memory,thinking, onMsg);
     }
 
     public code(prompt: string) {

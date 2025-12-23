@@ -17,7 +17,7 @@ export class ChatGptModel implements AiCommModel{
         return '';
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[],onMsg?:(msg: string)=>void){
+    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false,onMsg?:(msg: SseGeneralMessage)=>void){
         
     }
 

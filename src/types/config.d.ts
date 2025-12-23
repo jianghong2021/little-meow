@@ -13,5 +13,6 @@ type ChatModel = {
 
 interface ChatConfig {
     mode: ChatConfigMode
+    thinking: boolean
     model: ChatModel
 }
