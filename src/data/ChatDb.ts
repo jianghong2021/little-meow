@@ -26,7 +26,7 @@ export class ChatDb {
         return ar;
     }
 
-    public async getHistory(conversationId: string,id:string, date: number, max = 6) {
+    public async getHistory(conversationId: string,id:string, date: number, max = 20) {
         const res: ChatDetails[] = await db.table(this.TABLE)
             .where('date')
             .below(date)
