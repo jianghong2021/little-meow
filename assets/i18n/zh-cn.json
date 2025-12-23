@@ -1,0 +1,11 @@
+{
+    "ai.chat.thinking":"思考",
+    "ai.chat.reasoner":"推理",
+    "ai.chat.chat":"聊天",
+    "ai.chat.hello":"您好！我是您的AI助手，有什么可以帮您的吗？",
+    "ai.chat.input_placeholder":"我需要做些什么呢?",
+    "ai.chat.thinking_cont":"AI思考",
+    "chat.clear.current":"删除当前聊天",
+    "chat.clear.all":"删除全部聊天",
+    "chat.clear.yes":"删除"
+}

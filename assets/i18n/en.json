@@ -1,0 +1,11 @@
+{
+    "ai.chat.thinking":"Thinking",
+    "ai.chat.reasoner":"Reasoning",
+    "ai.chat.chat":"Chat",
+    "ai.chat.hello":"Hello! I am your AI assistant. How can I help you?",
+    "ai.chat.input_placeholder":"What do you need me to do?",
+    "ai.chat.thinking_cont":"AI thinking",
+    "chat.clear.current":"Delete current chat",
+    "chat.clear.all":"Delete all chats",
+    "chat.clear.yes":"Delete"
+}

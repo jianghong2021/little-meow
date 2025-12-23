@@ -82,7 +82,7 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
         if (msg.reasoningContent) {
             thinking = `
                 <details class="msg-reasoning">
-                    <summary>AI思考</summary>
+                    <summary>${I18nUtils.t('ai.chat.thinking_cont')}</summary>
                     ${msg.reasoningContent}
                 </details>
             `
@@ -159,7 +159,7 @@ function onPutMessage(msg: ChatDetails, reset = true) {
             if (msg.reasoningContent) {
                 thinking = `
                 <details class="msg-reasoning">
-                    <summary>AI思考</summary>
+                    <summary>${I18nUtils.t('ai.chat.thinking_cont')}</summary>
                     ${msg.reasoningContent}
                 </details>
             `
@@ -185,7 +185,7 @@ function onPutMessage(msg: ChatDetails, reset = true) {
             if (msg.reasoningContent) {
                 thinking = `
                 <details class="msg-reasoning">
-                    <summary>AI思考</summary>
+                    <summary>${I18nUtils.t('ai.chat.thinking_cont')}</summary>
                     ${msg.reasoningContent}
                 </details>
             `

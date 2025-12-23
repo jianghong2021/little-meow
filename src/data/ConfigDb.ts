@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { I18nUtils } from '../utils/i18n';
 
 export class ConfigDa {
     private CACHE_KEY = 'chat-config';
@@ -11,12 +12,12 @@ export class ConfigDa {
         {
             type: 'deepseek',
             name: 'deepseek-chat',
-            label: '聊天'
+            label: I18nUtils.t('ai.chat.chat')
         },
         {
             type: 'deepseek',
             name: 'deepseek-reasoner',
-            label: '推理'
+            label: I18nUtils.t('ai.chat.reasoner')
         }
     ];
 

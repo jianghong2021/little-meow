@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
-import * as nls from 'vscode-nls';
 import { AiModel } from './AiModel';
 import { ConversationDb } from '../data/ConversationData';
 import { formatTimeAgo } from '../utils/date';
 import { ConfigDa } from '../data/ConfigDb';
-
-const localize = nls.loadMessageBundle();
+import { I18nUtils } from '../utils/i18n';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
     static VIEW_ID = 'my-lovely-cat-view';
@@ -50,8 +48,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     break;
             }
         });
-
-        webviewView.title = localize('view.chat.settings', 'hello');
 
         const editorDispose = vscode.window.onDidChangeActiveTextEditor((event) => {
             this.webview?.webview?.postMessage({
@@ -121,9 +117,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async clearHistory() {
-        const res = await vscode.window.showWarningMessage(localize('view.chat.clear', 'Clear Chat History'), {
+        const res = await vscode.window.showWarningMessage(I18nUtils.t('chat.clear.current'), {
             modal: true
-        }, 'Yes');
+        }, I18nUtils.t('chat.clear.yes'));
         if (res !== undefined) {
             //删除当前聊天
             const db = new ConversationDb(this.context);
@@ -137,9 +133,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async clearAllHistory(){
-        const res = await vscode.window.showWarningMessage(localize('view.chat.clear', 'Clear Chat History'), {
+        const res = await vscode.window.showWarningMessage(I18nUtils.t('chat.clear.all'), {
             modal: true
-        }, 'Yes');
+        }, I18nUtils.t('chat.clear.yes'));
         if (res !== undefined) {
             //删除全部聊天
             const db = new ConversationDb(this.context);
@@ -346,7 +342,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     <div class="chat-container">
         <div class="chat-messages" id="chat-messages">
             <div class="message assistant">
-                您好！我是您的AI助手，有什么可以帮您的吗？
+                ${I18nUtils.t('ai.chat.hello')}
                 <div class="message-time">刚刚</div>
             </div>
         </div>
@@ -356,7 +352,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 <span></span>
                 <img onclick="setChatMode()" src="${baseUrl}/icons/ic-${modeIcon}.svg"/>
             </div>
-            <textarea type="text" id="message-input" placeholder="我需要做些什么呢?" autocomplete="off" row="2"></textarea>
+            <textarea type="text" id="message-input" placeholder="${I18nUtils.t('ai.chat.input_placeholder')}" autocomplete="off" row="2"></textarea>
             
             <div class="bottom-btns">
                 <div class="model-box">
@@ -364,7 +360,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                         ${models.join('\n')}
                     </select>
                     <div class="thinking ${this.config.data.thinking?'thinking-ac':''}" onclick="setChatThinking()">
-                        <span>思考</span>
+                        <span>${I18nUtils.t('ai.chat.thinking')}</span>
                         <img src="${baseUrl}/icons/ic-${thinkingIcon}.svg"/>
                     </div>
                 </div>
@@ -382,6 +378,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             activeDocument: "${this.getActiveFile()}",
             conversation: ${JSON.stringify(conversation)}
         }
+            window.I18nUtils = {
+                messages: ${JSON.stringify(I18nUtils.messages)},
+                t(key, fallback) {
+                    return window.I18nUtils.messages[key] ?? fallback ?? key;
+                }
+            }
     </script>
     <script src="${baseUrl}/js/chat-cont.js"></script>
 </body>
