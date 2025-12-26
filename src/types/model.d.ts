@@ -5,9 +5,9 @@ interface AiCommModel {
     /**最大上下文 */
     MAX_CONTEXT_SIZE: number
     /**普通聊天 */
-    chat: (prompt: string, snippet?: string, memory?: GeneralMessage[]) => Promise<string>
+    chat: (model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[]) => Promise<string>
     /**sse聊天，流式 */
-    sseChat: (prompt: string, snippet?: string, memory?: GeneralMessage[], thinking?:boolean, onMsg?: (msg: SseGeneralMessage) => void) => Promise<void>
+    sseChat: (model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[], thinking?:boolean, onMsg?: (msg: SseGeneralMessage) => void) => Promise<void>
     /**生成代码 */
     code: (prompt: string) => Promise<string>
     /**API账户余额 */

@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import { ConfigDa } from '../../data/ConfigDb';
 
-export enum DeepseekTemperature {
+export enum DoubaoTemperature {
     CODE = 0.0,
     DATA = 1.0,
     CHAT = 1.3,
     CREATOR = 1.5
 }
 
-export class DeepseekModel implements AiCommModel {
-    private API_URL = 'https://api.deepseek.com';
+export class DoubaoModel implements AiCommModel {
+    private API_URL = 'https://ark.cn-beijing.volces.com';
     private API_TOKEN = '';
     private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
@@ -41,11 +41,11 @@ export class DeepseekModel implements AiCommModel {
 
     public async request(model: ChatModelId,prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
         if (!this.API_TOKEN) {
-            throw Error('请先去[DeepSeek](https://platform.deepseek.com/)官网申请API令牌Token，并在右上角菜单配置');
+            throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
         const body = JSON.stringify({
             "model": model,
-            "temperature": DeepseekTemperature.CODE,
+            "temperature": DoubaoTemperature.CODE,
             "max_tokens": 8192,
             "messages": [
                 { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上emoji" },
@@ -56,7 +56,7 @@ export class DeepseekModel implements AiCommModel {
             ],
             "stream": false
         });
-        const res = await fetch(`${this.API_URL}/chat/completions`, {
+        const res = await fetch(`${this.API_URL}/api/v3/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,11 +74,11 @@ export class DeepseekModel implements AiCommModel {
 
     public async requestSSE(model: ChatModelId,prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
         if (!this.API_TOKEN) {
-            throw Error('请先去[DeepSeek](https://platform.deepseek.com/)官网申请API令牌Token，并在右上角菜单配置');
+            throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
         const body = JSON.stringify({
             "model": model,
-            "temperature": DeepseekTemperature.CODE,
+            "temperature": DoubaoTemperature.CODE,
             "max_tokens": 8192,
             "thinking": thinking ? this.thinking.enabled : this.thinking.disabled,
             "messages": [
@@ -90,7 +90,7 @@ export class DeepseekModel implements AiCommModel {
             ],
             "stream": true
         });
-        const res = await fetch(`${this.API_URL}/chat/completions`, {
+        const res = await fetch(`${this.API_URL}/api/v3/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -117,8 +117,8 @@ export class DeepseekModel implements AiCommModel {
                 'Authorization': 'Bearer ' + this.API_TOKEN
             },
             body: JSON.stringify({
-                "model": "deepseek-chat",
-                "temperature": DeepseekTemperature.CODE,
+                "model": "doubao-seed-code-preview-251028",
+                "temperature": DoubaoTemperature.CODE,
                 "max_tokens": 8192,
                 "messages": [
                     { "role": "system", "content": '你仅负责代码生成，以纯源码格式返回，不要markdown' },
@@ -145,7 +145,7 @@ export class DeepseekModel implements AiCommModel {
             }
         });
         const data: AccountBalance | undefined = await res.json().catch((err) => {
-            console.log(err);
+            console.log('balance',err);
             return undefined;
         });
         if (!data) {

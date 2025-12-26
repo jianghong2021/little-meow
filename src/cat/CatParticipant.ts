@@ -1,11 +1,14 @@
 import * as vscode from 'vscode';
 import { AiModel } from './AiModel';
+import { ConfigDa } from '../data/ConfigDb';
 
 export class CatParticipant {
     public static ID = 'chat-my-lovely-cat';
     public static model = new AiModel();
+    public static config: ConfigDa;
     public static init(context: vscode.ExtensionContext) {
         this.model.initConfig(context);
+        this.config = new ConfigDa(context);
         const cat = vscode.chat.createChatParticipant(this.ID, this.handler.bind(this));
         cat.iconPath = vscode.Uri.joinPath(context.extensionUri, 'assets/icons/logo.svg');
     }
@@ -18,7 +21,7 @@ export class CatParticipant {
     ): Promise<any> {
         stream.progress('Thinking...');
         try {
-            const res = await this.model.chat(request.prompt);
+            const res = await this.model.chat(this.config.data.model.name, request.prompt);
             stream.markdown(res);
         } catch (err: any) {
             stream.markdown(err.message || 'unknown error');

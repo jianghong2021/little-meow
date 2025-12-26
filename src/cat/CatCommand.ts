@@ -19,7 +19,7 @@ export class CatCommand {
         const setTokenDepose = vscode.commands.registerCommand('my-lovely-cat.setToken', async () => {
             const db = new ConfigDa(context);
             const token = await vscode.window.showInputBox({
-                title: `请输入【${db.data.model.type}】API令牌token`,
+                title: `请输入【${db.data.model.platform}】API令牌token`,
             });
             if (token) {
                 

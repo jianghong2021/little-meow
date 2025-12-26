@@ -53,7 +53,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
         const lang = this.getDocumentLanguage(document);
         console.log('正在生成: ',`编程语言：${lang}, ${prompt}`);
         const text = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
+            location: vscode.ProgressLocation.Window,
             title: "正在生成代码...",
             cancellable: false
         }, () => {

@@ -3,6 +3,7 @@ import { ConfigDa } from '../data/ConfigDb';
 import { DeepseekModel } from './models/DeepseekModel';
 import { ClaudeModel } from './models/ClaudeModel';
 import { ChatGptModel } from './models/ChatGptModel';
+import { DoubaoModel } from './models/DoubaoModel';
 
 export class AiModel implements AiCommModel {
     private API_TOKEN = '';
@@ -20,12 +21,14 @@ export class AiModel implements AiCommModel {
         const config = new ConfigDa(context);
         this.API_TOKEN = (await config.getToken()) || '';
 
-        if (config.data.model.type === 'deepseek') {
+        if (config.data.model.platform === 'deepseek') {
             this.model = new DeepseekModel(this.API_TOKEN) as any;
-        } else if (config.data.model.type === 'claude') {
+        } else if (config.data.model.platform === 'claude') {
             this.model = new ClaudeModel(this.API_TOKEN) as any;
-        } else if (config.data.model.type === 'gpt') {
+        } else if (config.data.model.platform === 'gpt') {
             this.model = new ChatGptModel(this.API_TOKEN) as any;
+        } else if (config.data.model.platform === 'doubao') {
+            this.model = new DoubaoModel(this.API_TOKEN) as any;
         }
 
         this.MAX_CONTEXT_SIZE = this.model?.MAX_CONTEXT_SIZE || 0;
@@ -33,19 +36,19 @@ export class AiModel implements AiCommModel {
         this.getAccountBalance();
     }
 
-    public chat(prompt: string, snippet = '', memory?:GeneralMessage[]) {
+    public chat(model: ChatModelId,prompt: string, snippet = '', memory?:GeneralMessage[]) {
         if (!this.model) {
             throw Error('Model not initialized');
         }
-        return this.model.chat(prompt, snippet, memory);
+        return this.model.chat(model,prompt, snippet, memory);
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false, onMsg?: (msg: SseGeneralMessage) => void) {
+    async sseChat(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false, onMsg?: (msg: SseGeneralMessage) => void) {
         if (!this.model) {
             throw Error('Model not initialized');
         }
 
-        await this.model.sseChat(prompt, snippet, memory,thinking, onMsg);
+        await this.model.sseChat(model,prompt, snippet, memory,thinking, onMsg);
     }
 
     public code(prompt: string) {

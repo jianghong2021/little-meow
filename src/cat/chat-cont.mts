@@ -112,10 +112,8 @@ function pushMessage(msg: ChatDetails, onlyRender = false) {
     }
 
     hljs.highlightAll();
-}
 
-function getStatusMsgs(id: string) {
-    return state.data.find(x => x.id === id);
+    scrollToBottom()
 }
 
 function updateStatusMsgs(msg: ChatDetails) {
@@ -373,6 +371,13 @@ function setChatMode() {
     vscode.postMessage({ type: 'setChatMode', data: undefined });
 }
 
+function setPlatform(val:string){
+    if(state.answering){
+        return
+    }
+    vscode.postMessage({ type: 'setPlatform', data: val });
+}
+
 function setModel(val: string) {
     if(state.answering){
         return
@@ -410,6 +415,7 @@ window.addEventListener('load', () => {
 (window as any)['setChatMode'] = setChatMode;
 (window as any)['setModel'] = setModel;
 (window as any)['setChatThinking'] = setChatThinking;
+(window as any)['setPlatform'] = setPlatform;
 
 activeDocument.textContent = getFileName(window.initConfig.activeDocument || '');
 

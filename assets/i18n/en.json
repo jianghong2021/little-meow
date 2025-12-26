@@ -1,6 +1,7 @@
 {
     "ai.chat.thinking":"Thinking",
     "ai.chat.reasoner":"Reasoning",
+    "ai.chat.code":"Code",
     "ai.chat.chat":"Chat",
     "ai.chat.hello":"Hello! I am your AI assistant. How can I help you?",
     "ai.chat.input_placeholder":"What do you need me to do?",

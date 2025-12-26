@@ -40,6 +40,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'setModel':
                     this.setModel(e.data);
                     break;
+                case 'setPlatform':
+                    this.setPlatform(e.data);
+                    break;
                 case 'setChatThinking':
                     this.setChatThinking();
                     break;
@@ -90,28 +93,41 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this.renderHtml();
     }
 
-    private async setChatThinking(){
+    private async setChatThinking() {
 
         const conf = this.config.data;
         conf.thinking = !conf.thinking;
 
-        await this.config.saveConfig({...conf});
+        await this.config.saveConfig({ ...conf });
 
         this.renderHtml();
     }
 
-    private async setModel(val: string){
-        const [mType,mName] = val.split(' ');
-        if(!mType || !mName){
-            console.error('model err',mType,mName);
+    private async setPlatform(val: string) {
+        if (!val.trim()) {
+            console.error('model err');
             return;
         }
 
         const conf = this.config.data;
-        conf.model.name = mName as any;
-        conf.model.type = mType as any;
+        conf.model.platform = val as any;
+        conf.model.name = this.config.defaultModel?.name || 'deepseek-chat';
 
-        await this.config.saveConfig({...conf});
+        await this.config.saveConfig({ ...conf });
+
+        this.renderHtml();
+    }
+
+    private async setModel(val: string) {
+        if (!val.trim()) {
+            console.error('model err');
+            return;
+        }
+
+        const conf = this.config.data;
+        conf.model.name = val as any;
+
+        await this.config.saveConfig({ ...conf });
 
         this.renderHtml();
     }
@@ -132,7 +148,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    private async clearAllHistory(){
+    private async clearAllHistory() {
         const res = await vscode.window.showWarningMessage(I18nUtils.t('chat.clear.all'), {
             modal: true
         }, I18nUtils.t('chat.clear.yes'));
@@ -238,14 +254,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         conv.title = prompt;
         db.update(msg.conversationId, conv);
 
-        const modalMemory = memory.map(x=>{
-            const m:GeneralMessage = {
+        const modalMemory = memory.map(x => {
+            const m: GeneralMessage = {
                 role: x.role,
                 content: x.content
             }
             return m
         })
-        this.model.sseChat(prompt, activeFile, modalMemory, this.config.data.thinking, data => {
+        this.model.sseChat(this.config.data.model.name, prompt, activeFile, modalMemory, this.config.data.thinking, data => {
             const answer: ChatDetails = {
                 ...msg,
                 content: data.content,
@@ -318,14 +334,22 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const thinkingIcon = this.config.data.thinking ? 'thinking-1' : 'thinking-0';
 
         const conf = this.config.data;
-        const models: string[] = [];
-
-        this.config.models.forEach(m => {
-            models.push(`
-                <option value="${m.type} ${m.name}" ${(conf.model.type === m.type && conf.model.name === m.name) ? 'selected' : ''}>
+        const models = this.config.models.filter(x => {
+            return x.platform === this.config.data.model.platform
+        }).map(m => {
+            return `
+                <option value="${m.name}" ${(conf.model.platform === m.platform && conf.model.name === m.name) ? 'selected' : ''}>
                 ${m.label}
                 </option>
-            `);
+            `
+        });
+
+        const platforms = this.config.platforms.map(x => {
+            return `
+                <option value="${x}" ${(conf.model.platform === x) ? 'selected' : ''}>
+                ${x}
+                </option>
+            `
         });
 
         return `
@@ -356,10 +380,13 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             
             <div class="bottom-btns">
                 <div class="model-box">
+                    <select class="model-select" onchange="setPlatform(this.value)">
+                        ${platforms.join('\n')}
+                    </select>
                     <select class="model-select" onchange="setModel(this.value)">
                         ${models.join('\n')}
                     </select>
-                    <div class="thinking ${this.config.data.thinking?'thinking-ac':''}" onclick="setChatThinking()">
+                    <div class="thinking ${this.config.data.thinking ? 'thinking-ac' : ''}" onclick="setChatThinking()">
                         <span>${I18nUtils.t('ai.chat.thinking')}</span>
                         <img src="${baseUrl}/icons/ic-${thinkingIcon}.svg"/>
                     </div>

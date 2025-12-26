@@ -10,16 +10,42 @@ export class ConfigDa {
 
     public models:ChatModel[] = [
         {
-            type: 'deepseek',
+            platform: 'deepseek',
             name: 'deepseek-chat',
-            label: I18nUtils.t('ai.chat.chat')
+            label: I18nUtils.t('ai.chat.chat'),
+            ability: 'text'
         },
         {
-            type: 'deepseek',
+            platform: 'deepseek',
             name: 'deepseek-reasoner',
-            label: I18nUtils.t('ai.chat.reasoner')
+            label: I18nUtils.t('ai.chat.reasoner'),
+            ability: 'text'
+        },
+        {
+            platform: 'doubao',
+            name: 'doubao-seed-1-6-lite-251015',
+            label: I18nUtils.t('ai.chat.chat'),
+            ability: 'text'
+        },
+        {
+            platform: 'doubao',
+            name: 'doubao-seed-code-preview-251028',
+            label: I18nUtils.t('ai.chat.code'),
+            ability: 'text'
         }
     ];
+
+    public platforms: ModePlatform[] = [
+        'deepseek',
+        'doubao'
+    ];
+
+    public get defaultModel(){
+        const model = this.models.find(x=>{
+            return this.data.model.platform === x.platform;
+        });
+        return model
+    }
 
     public get data() {
         const cache = this.context.globalState.get(this.CACHE_KEY);
@@ -30,9 +56,10 @@ export class ConfigDa {
             mode: 'norm',
             thinking: false,
             model: {
-                type: 'deepseek',
+                platform: 'deepseek',
                 name: 'deepseek-chat',
-                label: 'chat'
+                label: 'chat',
+                ability: 'text'
             }
         };
         return conf;
@@ -44,13 +71,13 @@ export class ConfigDa {
 
     public setToken(token: string){
         const config = this.data;
-        const id = this.context.extension.id + config.model.type;
+        const id = this.context.extension.id + config.model.platform;
         this.context.secrets.store(id,token);
     }
 
     public async getToken(){
         const config = this.data;
-        const id = this.context.extension.id + config.model.type;
+        const id = this.context.extension.id + config.model.platform;
         return await this.context.secrets.get(id);
     }
 }

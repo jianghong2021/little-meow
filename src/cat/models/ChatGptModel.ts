@@ -9,7 +9,7 @@ export class ChatGptModel implements AiCommModel{
     async getAccountBalance(){
 
     }
-    chat<T>(prompt: string, snippet?: string, memory?: GeneralMessage[]){
+    chat<T>(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[]){
         return '' as T;
     }
     async code(prompt: string){
@@ -17,7 +17,7 @@ export class ChatGptModel implements AiCommModel{
         return '';
     }
 
-    async sseChat(prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false,onMsg?:(msg: SseGeneralMessage)=>void){
+    async sseChat(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false,onMsg?:(msg: SseGeneralMessage)=>void){
         
     }
 
