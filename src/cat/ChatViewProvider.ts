@@ -264,7 +264,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this.model.sseChat(this.config.data.model.name, prompt, activeFile, modalMemory, this.config.data.thinking, data => {
             const answer: ChatDetails = {
                 ...msg,
-                content: data.content,
+                content: data.content || '',
                 reasoningContent: data.reasoningContent
             };
             answer.status = 'answering';

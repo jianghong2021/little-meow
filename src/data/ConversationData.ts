@@ -1,10 +1,21 @@
 import * as vscode from 'vscode';
+import { db, tableExists } from '.';
 
 export class ConversationDb {
     private CACHE_KEY = 'chat-conversations';
     private context: vscode.ExtensionContext;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
+    }
+
+    private TABLE = 'chats';
+    public async init() {
+        if (await tableExists(this.TABLE)) {
+            return;
+        }
+        db.version(1).stores({
+            chats: '&id, title,selected,date,mode, [date]'
+        });
     }
 
     public getAll() {

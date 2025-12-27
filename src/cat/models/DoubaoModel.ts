@@ -10,6 +10,7 @@ export enum DoubaoTemperature {
 
 export class DoubaoModel implements AiCommModel {
     private API_URL = 'https://ark.cn-beijing.volces.com';
+    private API_ACCOUNT_URL = 'https://open.volcengineapi.com';
     private API_TOKEN = '';
     private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
@@ -39,7 +40,7 @@ export class DoubaoModel implements AiCommModel {
         this.getAccountBalance();
     }
 
-    public async request(model: ChatModelId,prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
+    public async request(model: ChatModelId, prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
         if (!this.API_TOKEN) {
             throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
@@ -72,7 +73,7 @@ export class DoubaoModel implements AiCommModel {
         return code;
     }
 
-    public async requestSSE(model: ChatModelId,prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
+    public async requestSSE(model: ChatModelId, prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
         if (!this.API_TOKEN) {
             throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
@@ -137,44 +138,22 @@ export class DoubaoModel implements AiCommModel {
     }
 
     public async getAccountBalance() {
-        const res = await fetch(`${this.API_URL}/user/balance`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + this.API_TOKEN
-            }
-        });
-        const data: AccountBalance | undefined = await res.json().catch((err) => {
-            console.log('balance',err);
-            return undefined;
-        });
-        if (!data) {
-            vscode.window.setStatusBarMessage('小喵喵: 获取账户失败');
-            return;
-        }
-
-        let text = `小喵喵: 余额不足`;
-        if (data.is_available) {
-            const balance = data.balance_infos[0];
-            text = `小喵喵: ${balance.total_balance} ${balance.currency}`;
-        }
-
-        vscode.window.setStatusBarMessage(text);
+        
     }
 
-    chat(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[]) {
-        return this.request(model,prompt, snippet, memory);
+    chat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[]) {
+        return this.request(model, prompt, snippet, memory);
     }
     async code(prompt: string) {
 
         return this.getCode(prompt);
     }
 
-    async sseChat(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
+    async sseChat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
         if (!onMsg) {
             return;
         }
-        const stream = await this.requestSSE(model,prompt, snippet, memory, thinking);
+        const stream = await this.requestSSE(model, prompt, snippet, memory, thinking);
 
         const decoder = new TextDecoder();
         while (true) {
