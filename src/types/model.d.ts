@@ -12,4 +12,5 @@ interface AiCommModel {
     code: (prompt: string) => Promise<string>
     /**API账户余额 */
     getAccountBalance: () => Promise<void>
+    agent: (prompt: string,source?: string)=>Promise<AgentMessage>
 }

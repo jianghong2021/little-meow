@@ -109,9 +109,9 @@ export class DoubaoModel implements AiCommModel {
 
     private async getCode(prompt: string): Promise<string> {
         if (!this.API_TOKEN) {
-            throw Error('请先去DeepSeek官网申请API令牌Token，并在右上角菜单配置');
+            throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
-        const res = await fetch(`${this.API_URL}/chat/completions`, {
+        const res = await fetch(`${this.API_URL}/api/v3/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -130,6 +130,51 @@ export class DoubaoModel implements AiCommModel {
             })
         });
         const data: any = await res.json();
+        if (data['error']) {
+            throw Error(data['error']['message'] || 'unknown error')
+        }
+        if (!data.choices[0]) {
+            throw Error('生成失败，请稍后重试');
+        }
+        const code = data.choices[0].message.content;
+        return code;
+    }
+
+    private async agentCode(prompt: string, source?: string): Promise<string> {
+        if (!this.API_TOKEN) {
+            throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
+        }
+        const res = await fetch(`${this.API_URL}/api/v3/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.API_TOKEN
+            },
+            body: JSON.stringify({
+                "model": "doubao-seed-code-preview-251028",
+                "temperature": DoubaoTemperature.CODE,
+                "max_tokens": 8192,
+                "messages": [
+                    { "role": "system", "content": '你仅负责代码生成，以纯源码格式返回，不要markdown' },
+                    { "role": "system", "content": `源码: \n ${source}` },
+                    {
+                        "role": "system", "content": `
+                        按照要求改动用户源码,将新的源码放于字段"content",改动说明放于字段"compare",
+                        输出示例json:
+                        {
+                            "content":"const a=1;",
+                            "compare": "改动了函数xx,重新优化此函数"
+                        }    
+                        ` },
+                    { "role": "user", "content": prompt }
+                ],
+                "stream": false
+            })
+        });
+        const data: any = await res.json();
+        if (data['error']) {
+            throw Error(data['error']['message'] || 'unknown error')
+        }
         if (!data.choices[0]) {
             throw Error('生成失败，请稍后重试');
         }
@@ -138,7 +183,7 @@ export class DoubaoModel implements AiCommModel {
     }
 
     public async getAccountBalance() {
-        
+
     }
 
     chat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[]) {
@@ -190,6 +235,21 @@ export class DoubaoModel implements AiCommModel {
                 onMsg(m);
             }
 
+        }
+    }
+
+    async agent(prompt: string, source?: string) {
+        const msg: AgentMessage = {
+            content: '',
+            compare: ''
+        }
+        try {
+            const text = await this.agentCode(prompt, source);
+            const code = text.replaceAll(/\`{3}(\w+)?/g, '');
+            return JSON.parse(code);
+        } catch (err: any) {
+            msg.error = err.message || '解析失败'
+            return msg
         }
     }
 }

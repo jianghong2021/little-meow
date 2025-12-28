@@ -5,8 +5,12 @@
     "ai.chat.chat":"聊天",
     "ai.chat.hello":"您好！我是您的AI助手，有什么可以帮您的吗？",
     "ai.chat.input_placeholder":"我需要做些什么呢?",
+    "ai.chat.waiting":"请稍等...",
     "ai.chat.thinking_cont":"AI思考",
     "chat.clear.current":"删除当前聊天",
     "chat.clear.all":"删除全部聊天",
-    "chat.clear.yes":"删除"
+    "chat.clear.yes":"删除",
+    "agent.not_activeDocument":"没有正在活动的文档",
+    "agent.confirm.yes":"更新文档",
+    "agent.confirm.no":"取消更新"
 }

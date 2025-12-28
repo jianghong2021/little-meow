@@ -5,6 +5,12 @@ export class ChatGptModel implements AiCommModel{
     constructor(token: string){
         this.API_TOKEN = token;
     }
+    async agent (prompt: string) {
+        return {
+            content: '',
+            compare: ''
+        }
+    };
     
     async getAccountBalance(){
 

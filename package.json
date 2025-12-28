@@ -100,12 +100,27 @@
           "title": "%activitybar.main.name%",
           "icon": "assets/icons/menus.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "chat-my-lovely-cat-agent",
+          "title": "%activitybar.main.name%",
+          "icon": "assets/icons/menus.svg"
+        }
       ]
     },
     "views": {
       "chat-my-lovely-cat-view": [
         {
           "id": "my-lovely-cat-view",
+          "name": "%activitybar.main.view.name%",
+          "icon": "assets/icons/menus.svg",
+          "type": "webview"
+        }
+      ],
+      "chat-my-lovely-cat-agent": [
+        {
+          "id": "my-lovely-cat-agent",
           "name": "%activitybar.main.view.name%",
           "icon": "assets/icons/menus.svg",
           "type": "webview"

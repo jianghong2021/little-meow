@@ -50,8 +50,34 @@ async function buildContent() {
 	await ctx.dispose();
 }
 
+async function buildPanelContent() {
+	const ctx = await esbuild.context({
+		entryPoints: [
+			'src/cat/agent-cont.tsx'
+		],
+		bundle: true,
+		format: 'esm',
+		minify: production,
+		sourcemap: !production,
+		sourcesContent: false,
+		platform: 'browser',
+		outfile: 'assets/js/agent-cont.js',
+		logLevel: 'silent',
+		plugins: [
+			/* add to the end of plugins array */
+			esbuildProblemMatcherPlugin,
+			solidPlugin({
+				dev: !production
+			})
+		],
+	});
+	await ctx.rebuild();
+	await ctx.dispose();
+}
+
 if (cont) {
-	buildContent()
+	buildContent();
+	buildPanelContent();
 }
 
 async function main() {

@@ -24,36 +24,11 @@ export default function () {
 
     const [config, setConfig] = createSignal(window.initConfig.config);
 
-    const addCopyButtonForCode = () => {
-        document.querySelectorAll('pre > code').forEach((codeBlock) => {
-            const pre = codeBlock.parentNode as HTMLElement;
-
-            // 创建复制按钮
-            const button = document.createElement('button');
-            button.className = 'copy-btn';
-            button.innerText = 'Copy';
-
-            // 点击复制
-            button.addEventListener('click', () => {
-                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
-                    button.innerText = 'Copied!';
-                    setTimeout(() => button.innerText = 'Copy', 1200);
-                });
-            });
-
-            // pre 元素相对定位，按钮绝对定位
-            pre.style.position = 'relative';
-            pre.appendChild(button);
-        });
-
-    }
-
     const scrollToBottom = () => {
         if (resend()) {
             return
         }
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        addCopyButtonForCode();
     }
 
     const getMemory = (id: string, date: number) => {
@@ -90,7 +65,8 @@ export default function () {
             content: x.content(),
             date: x.date,
             role: x.role,
-            fid: x.fid
+            fid: x.fid,
+            reasoningContent: x.reasoningContent(),
         }
 
         return m

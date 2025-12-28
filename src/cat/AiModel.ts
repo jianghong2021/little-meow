@@ -59,6 +59,14 @@ export class AiModel implements AiCommModel {
         return this.model.code(prompt);
     }
 
+    public agent(prompt: string,source?: string) {
+        if (!this.model) {
+            throw Error('Model not initialized');
+        }
+
+        return this.model.agent(prompt,source);
+    }
+
     public async getAccountBalance(){
         const now = Date.now();
         if (this.lastGetAccount > 0 && now - this.lastGetAccount < 5_000) {

@@ -1,4 +1,4 @@
-import { Accessor, Show, createEffect, createSignal, onMount } from "solid-js"
+import { Show, createEffect, createSignal } from "solid-js"
 import { formatTimeAgo } from "../../../utils/date"
 import { ChatDb } from '../../../data/ChatDb';
 import { marked } from 'marked';
@@ -37,21 +37,49 @@ export default function ({ msg, scrollToBottom, reSendMessage }: Props) {
         <img src={`${window.initConfig.baseUrl}/icons/loading${window.initConfig.isDark ? '-dark' : ''}.svg`} />
     </div>
 
+    const addCopyButtonForCode = () => {
+        document.querySelectorAll('pre > code').forEach((codeBlock) => {
+            const pre = codeBlock.parentNode as HTMLElement;
+
+            // 创建复制按钮
+            const button = document.createElement('button');
+            button.className = 'copy-btn';
+            button.innerText = 'Copy';
+
+            // 点击复制
+            button.addEventListener('click', () => {
+                navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                    button.innerText = 'Copied!';
+                    setTimeout(() => button.innerText = 'Copy', 1200);
+                });
+            });
+
+            // pre 元素相对定位，按钮绝对定位
+            pre.style.position = 'relative';
+            pre.appendChild(button);
+        });
+
+    }
+
+    const reRender = () => {
+        if (msg.status() !== 'answering') {
+            hljs.highlightAll();
+            addCopyButtonForCode();
+        }
+
+        scrollToBottom();
+    }
+
     createEffect(async () => {
         const str = await marked.parse(msg.content());
         setContent(str);
 
-        setTimeout(scrollToBottom,50)
-    })
-
-    onMount(() => {
-        hljs.highlightAll();
-        scrollToBottom();
+        setTimeout(reRender, 50)
     })
 
     return <div class={`message ${msg.role}`} data-id={msg.id} data-status={msg.status}>
         <Show when={msg.reasoningContent() !== undefined && msg.reasoningContent() !== ''}>
-            <details class="msg-reasoning">
+            <details class="msg-reasoning" open={msg.status() === 'answering'}>
                 <summary>
                     {I18nUtils.t('ai.chat.thinking_cont')}
                 </summary>
@@ -63,7 +91,7 @@ export default function ({ msg, scrollToBottom, reSendMessage }: Props) {
         </Show>
         <Show when={msg.status() === 'ended'}>
             <div class="message-footer" style="display:${msg.status === 'ended' ? 'flex' : 'none'}">
-                <div class="btn-icon" style={{display:msg.role == 'assistant' ? 'flex' : 'none'}}>
+                <div class="btn-icon" style={{ display: msg.role == 'assistant' ? 'flex' : 'none' }}>
                     <img src={copyIcon} onclick={(e) => copyMsgContent(e.target as any, msg.id)} />
                     <img src={refreshIcon} onclick={() => reSendMessage(msg.id, msg.fid)} />
                 </div>
