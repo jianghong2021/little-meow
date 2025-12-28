@@ -99,7 +99,6 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         conf.thinking = !conf.thinking;
 
         await this.config.saveConfig({ ...conf });
-
         this.renderHtml();
     }
 
@@ -126,9 +125,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         const conf = this.config.data;
         conf.model.name = val as any;
-
         await this.config.saveConfig({ ...conf });
-
         this.renderHtml();
     }
 
@@ -327,30 +324,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         //基础路径
         const baseUrl = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'assets'));
-
         const conversation = this.getConversation();
 
-        const modeIcon = conversation.mode === 'code' ? 'checked' : 'check';
-        const thinkingIcon = this.config.data.thinking ? 'thinking-1' : 'thinking-0';
-
-        const conf = this.config.data;
-        const models = this.config.models.filter(x => {
-            return x.platform === this.config.data.model.platform
-        }).map(m => {
-            return `
-                <option value="${m.name}" ${(conf.model.platform === m.platform && conf.model.name === m.name) ? 'selected' : ''}>
-                ${m.label}
-                </option>
-            `
-        });
-
-        const platforms = this.config.platforms.map(x => {
-            return `
-                <option value="${x}" ${(conf.model.platform === x) ? 'selected' : ''}>
-                ${x}
-                </option>
-            `
-        });
+        const config = this.config.data;
 
         return `
         <!DOCTYPE html>
@@ -363,54 +339,23 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     <link rel="stylesheet" href="${baseUrl}/css/chat.css">
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-messages" id="chat-messages">
-            <div class="message assistant">
-                ${I18nUtils.t('ai.chat.hello')}
-                <div class="message-time">刚刚</div>
-            </div>
-        </div>
-        
-        <div class="chat-input-container">
-            <div id="activeDocument" data-mode="${conversation.mode}" style="display:${this.getActiveFile() ? 'flex' : 'none'}">
-                <span></span>
-                <img onclick="setChatMode()" src="${baseUrl}/icons/ic-${modeIcon}.svg"/>
-            </div>
-            <textarea type="text" id="message-input" placeholder="${I18nUtils.t('ai.chat.input_placeholder')}" autocomplete="off" row="2"></textarea>
-            
-            <div class="bottom-btns">
-                <div class="model-box">
-                    <select class="model-select" onchange="setPlatform(this.value)">
-                        ${platforms.join('\n')}
-                    </select>
-                    <select class="model-select" onchange="setModel(this.value)">
-                        ${models.join('\n')}
-                    </select>
-                    <div class="thinking ${this.config.data.thinking ? 'thinking-ac' : ''}" onclick="setChatThinking()">
-                        <span>${I18nUtils.t('ai.chat.thinking')}</span>
-                        <img src="${baseUrl}/icons/ic-${thinkingIcon}.svg"/>
-                    </div>
-                </div>
-                
-                <button id="send-button" disabled>
-                    <img src="${baseUrl}/icons/send.svg"/>
-                </button>
-            </div>
-        </div>
-    </div>
+    <div id="app"></div>
     <script>
         window.initConfig = {
             baseUrl: "${baseUrl}",
             isDark: ${vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark},
             activeDocument: "${this.getActiveFile()}",
-            conversation: ${JSON.stringify(conversation)}
+            conversation: ${JSON.stringify(conversation)},
+            platforms: ${JSON.stringify(this.config.platforms)},
+            models: ${JSON.stringify(this.config.models)},
+            config: ${JSON.stringify(config)},
         }
-            window.I18nUtils = {
-                messages: ${JSON.stringify(I18nUtils.messages)},
-                t(key, fallback) {
-                    return window.I18nUtils.messages[key] ?? fallback ?? key;
-                }
+        window.I18nUtils = {
+            messages: ${JSON.stringify(I18nUtils.messages)},
+            t(key, fallback) {
+                return window.I18nUtils.messages[key] ?? fallback ?? key;
             }
+        }
     </script>
     <script src="${baseUrl}/js/chat-cont.js"></script>
 </body>

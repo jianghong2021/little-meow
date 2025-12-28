@@ -1,11 +1,11 @@
 type GeneralMessageRole = 'system' | 'user' | 'assistant' | 'tool'
-
+type ChatDetailsStatus = 'waiting' | 'answering' | 'ended'
 interface ChatDetails {
     id: string
     conversationId: string
     title: string
-    status: 'waiting' | 'answering' | 'ended'
-    content: string
+    status: ChatDetailsStatus
+    content: any
     reasoningContent?: string
     date: number
     role: GeneralMessageRole
@@ -27,6 +27,9 @@ interface InitConfig {
     isDark: boolean
     activeDocument?: string
     conversation: ConversationDetails
+    models: ChatModel[]
+    config: ChatConfig
+    platforms: ModePlatform[]
 }
 
 interface Window {

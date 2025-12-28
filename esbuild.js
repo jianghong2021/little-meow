@@ -1,4 +1,5 @@
 const esbuild = require("esbuild");
+const {solidPlugin} = require('esbuild-plugin-solid');
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -27,27 +28,29 @@ const esbuildProblemMatcherPlugin = {
 async function buildContent() {
 	const ctx = await esbuild.context({
 		entryPoints: [
-			'src/cat/chat-cont.mts'
+			'src/cat/chat-cont.tsx'
 		],
 		bundle: true,
-		format: 'cjs',
+		format: 'esm',
 		minify: production,
 		sourcemap: !production,
 		sourcesContent: false,
 		platform: 'browser',
 		outfile: 'assets/js/chat-cont.js',
-		external: ['vscode'],
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */
 			esbuildProblemMatcherPlugin,
+			solidPlugin({
+				dev: !production
+			})
 		],
 	});
 	await ctx.rebuild();
 	await ctx.dispose();
 }
 
-if(cont){
+if (cont) {
 	buildContent()
 }
 

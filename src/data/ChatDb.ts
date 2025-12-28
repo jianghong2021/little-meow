@@ -26,7 +26,7 @@ export class ChatDb {
         return ar;
     }
 
-    public async getHistory(conversationId: string,id:string, date: number, max = 20) {
+    public async getHistory(conversationId: string, id: string, date: number, max = 20) {
         const res: ChatDetails[] = await db.table(this.TABLE)
             .where('date')
             .below(date)
@@ -43,11 +43,16 @@ export class ChatDb {
     }
 
     public async addOrUpdate(data: ChatDetails) {
-        const old = await this.one(data.id);
-        if (old) {
-            await this.update(old.id, data);
-        } else {
-            await this.insert(data);
+        try {
+            const old = await this.one(data.id);
+            if (old) {
+                await this.update(old.id, data);
+            } else {
+                await this.insert(data);
+            }
+        } catch (err) {
+            console.error(data)
+            console.error(err)
         }
     }
 
@@ -70,7 +75,7 @@ export class ChatDb {
             .delete();
     }
 
-    public async clearAll(){
+    public async clearAll() {
         await db.table(this.TABLE).clear()
     }
 }

@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.106.1"
@@ -166,6 +166,7 @@
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.0",
+    "esbuild-plugin-solid": "^0.6.0",
     "eslint": "^9.39.1",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3",
@@ -177,6 +178,7 @@
     "highlight.js": "^11.11.1",
     "markdown-it": "^14.1.0",
     "marked": "^17.0.1",
+    "solid-js": "^1.9.10",
     "uuid": "^13.0.0",
     "vscode-nls": "^5.2.0"
   }
