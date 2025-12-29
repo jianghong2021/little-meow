@@ -155,7 +155,8 @@ export class DeepseekModel implements AiCommModel {
                     { "role": "system", "content": `源码: \n ${source}` },
                     {
                         "role": "system", "content": `
-                    按照要求改动用户源码,将新的源码放于字段"content",改动说明放于字段"compare",
+                    按照要求改动用户源码(若无源码,则按照要求生成全新源码),将新的源码放于字段"content",改动说明或源码简要放于字段"compare",
+                    "compare"说明尽量简洁表达.
                     输出示例json:
                     {
                         "content":"const a=1;",

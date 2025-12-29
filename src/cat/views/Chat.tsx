@@ -5,6 +5,7 @@ import InputBox from "./chat/InputBox";
 import { v4 as uuidv4 } from 'uuid';
 import { getFileName } from "../../utils/file";
 import { UiChatDetails } from "./chat-ui";
+import { Pet } from "./chat/Pet";
 
 const chatDb = new ChatDb();
 
@@ -23,6 +24,7 @@ export default function () {
     const [answering, setAnswering] = createSignal(false);
 
     const [config, setConfig] = createSignal(window.initConfig.config);
+    const [emotion,setEmotion] = createSignal<PetEmotion>('happy');
 
     const scrollToBottom = () => {
         if (resend()) {
@@ -83,7 +85,9 @@ export default function () {
             return;
         }
 
-        if (msg.status === 'answering' || msg.content.trim() === '') {
+        if (msg.status === 'answering') {
+            data[index].setContent(prev => prev + msg.content);
+        }else if(msg.status !== 'waiting' && msg.content.trim() === ''){
             data[index].setContent(prev => prev + msg.content);
         } else {
             data[index].setContent(msg.content);
@@ -110,7 +114,7 @@ export default function () {
         if (!userMsg || !aiMsg) {
             return
         }
-
+        setEmotion('thinking');
         setResend(true);
         setAnswering(true);
 
@@ -135,7 +139,7 @@ export default function () {
 
         setResend(false);
         setAnswering(true);
-
+        setEmotion('thinking');
         // 用户消息
         const userMsg: ChatDetails = {
             id: uuidv4(),
@@ -179,11 +183,15 @@ export default function () {
             console.log('信息不存在', msg)
             return;
         }
+        if(msg.status==='ended'){
+            setEmotion('happy');
+        }
         updateStatusMsgs(msg);
         setAnswering(false);
     }
 
     const onAnswer = (msg: ChatDetails) => {
+        setEmotion('speaking');
         updateStatusMsgs(msg);
     }
 
@@ -258,6 +266,6 @@ export default function () {
                 }
             </For>
         </div>
-        <InputBox config={config} setConfig={setConfig} answering={answering} activeDocument={activeDocument()} conversation={conversation} sendMessage={sendMessage} />
+        <InputBox config={config} setConfig={setConfig} emotion={emotion} setEmotion={setEmotion} answering={answering} activeDocument={activeDocument()} conversation={conversation} sendMessage={sendMessage} />
     </div>
 }

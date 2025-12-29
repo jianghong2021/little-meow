@@ -81,6 +81,14 @@
           "dark": "assets/icons/history-dark.svg",
           "light": "assets/icons/history.svg"
         }
+      },
+      {
+        "command": "my-lovely-cat-agent.clear",
+        "title": "%view.agent.clear%",
+        "icon": {
+          "dark": "assets/icons/clear-dark.svg",
+          "light": "assets/icons/clear.svg"
+        }
       }
     ],
     "languages": [],
@@ -121,7 +129,7 @@
       "chat-my-lovely-cat-agent": [
         {
           "id": "my-lovely-cat-agent",
-          "name": "%activitybar.main.view.name%",
+          "name": "%activitybar.main.name%",
           "icon": "assets/icons/menus.svg",
           "type": "webview"
         }
@@ -153,6 +161,11 @@
           "command": "my-lovely-cat.setToken",
           "when": "view == my-lovely-cat-view",
           "group": "settings"
+        },
+        {
+          "command": "my-lovely-cat-agent.clear",
+          "when": "view == my-lovely-cat-agent",
+          "group": "navigation"
         }
       ]
     }

@@ -83,7 +83,9 @@ export class DoubaoModel implements AiCommModel {
             "max_tokens": 8192,
             "thinking": thinking ? this.thinking.enabled : this.thinking.disabled,
             "messages": [
-                { "role": "system", "content": "你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上心情emoji" },
+                { "role": "system", "content": `
+                你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上心情emoji.
+                ` },
                 { "role": "system", "content": '回答问题时，内容简练，不要过多不必要的赘述' },
                 { "role": "system", "content": snippet },
                 ...memory,
@@ -159,11 +161,12 @@ export class DoubaoModel implements AiCommModel {
                     { "role": "system", "content": `源码: \n ${source}` },
                     {
                         "role": "system", "content": `
-                        按照要求改动用户源码,将新的源码放于字段"content",改动说明放于字段"compare",
+                        按照要求改动用户源码(若无源码,则按照要求生成全新源码),将新的源码放于字段"content",改动说明或源码简要放于字段"compare",
+                        "compare"说明尽量简洁表达.
                         输出示例json:
                         {
                             "content":"const a=1;",
-                            "compare": "改动了函数xx,重新优化此函数"
+                            "compare": "改动了函数xx,重新优化此函数(已创建函数xx)"
                         }    
                         ` },
                     { "role": "user", "content": prompt }

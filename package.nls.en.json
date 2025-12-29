@@ -9,6 +9,7 @@
     "view.chat.clearAll": "Delete all chats",
     "view.chat.settings": "Settings",
     "view.chat.clear.success": "Chat cleared",
-    "view.chat.history": "Caht History",
-    "view.chat.new": "New Chat"
+    "view.chat.history": "Chat History",
+    "view.chat.new": "New Chat",
+    "view.agent.clear": "Clear History"
 }

@@ -1,15 +1,14 @@
 import * as vscode from 'vscode';
-import { db, tableExists } from '.';
 
-export class ConversationDb {
-    private CACHE_KEY = 'chat-conversations';
+export class AgentMsgDbs {
+    private CACHE_KEY = 'agent-console';
     private context: vscode.ExtensionContext;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
     }
 
     public getAll() {
-        const res: ConversationDetails[] = this.context.globalState.get(this.CACHE_KEY) || [];
+        const res: ConsoleMessage[] = this.context.globalState.get(this.CACHE_KEY) || [];
         return res.sort((a, b) => b.date - a.date);
     }
 
@@ -17,23 +16,8 @@ export class ConversationDb {
         return this.getAll().find(x => x.id === id);
     }
 
-    public latestOrSelected() {
-        const ar = this.getAll();
-        const selected = ar.find(x => x.selected);
-        if (selected) {
-            return selected;
-        }
-        if (ar.length === 0) {
-            return;
-        }
-        const conv = ar[0];
-        conv.selected = true;
-        this.setActive(conv.id);
 
-        return conv;
-    }
-
-    public update(id: string, data: ConversationDetails) {
+    public update(id: string, data: ConsoleMessage) {
         const ar = this.getAll();
         for (let i = 0; i < ar.length; i++) {
             if (ar[i].id === id) {
@@ -42,18 +26,6 @@ export class ConversationDb {
             }
         }
 
-        this.context.globalState.update(this.CACHE_KEY, ar);
-    }
-
-    public setActive(id: string) {
-        const ar = this.getAll();
-        for (let i = 0; i < ar.length; i++) {
-            if (ar[i].id === id) {
-                ar[i].selected = true;
-            } else {
-                ar[i].selected = false;
-            }
-        }
         this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
@@ -78,22 +50,7 @@ export class ConversationDb {
         return `${ar.join('')}-${dateAr.join('')}`;
     }
 
-    public new() {
-        const data: ConversationDetails = {
-            id: '',
-            title: 'New Conversation',
-            selected: true,
-            date: Date.now(),
-            mode: 'code'
-        };
-        data.id = this.createID();
-        const ar = this.getAll();
-        ar.push(data);
-        this.context.globalState.update(this.CACHE_KEY, ar);
-        return data;
-    }
-
-    public insert(data: ConversationDetails) {
+    public insert(data: ConsoleMessage) {
         data.id = this.createID();
         const ar = this.getAll();
         ar.push(data);

@@ -356,6 +356,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 return window.I18nUtils.messages[key] ?? fallback ?? key;
             }
         }
+        document.addEventListener("contextmenu", (event) => {
+                event.preventDefault();
+            })
     </script>
     <script src="${baseUrl}/js/chat-cont.js"></script>
 </body>

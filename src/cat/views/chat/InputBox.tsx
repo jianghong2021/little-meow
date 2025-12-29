@@ -1,4 +1,5 @@
-import { For, Accessor, createSignal, Setter } from "solid-js"
+import { For, Accessor, createSignal, Setter, onMount, onCleanup } from "solid-js"
+import { Pet } from "./Pet"
 
 interface Props {
     answering: Accessor<boolean>
@@ -6,6 +7,8 @@ interface Props {
         file: string
         show: boolean
     }
+    emotion: Accessor<PetEmotion>
+    setEmotion: Setter<PetEmotion>
     conversation: Accessor<ConversationDetails>
     config: Accessor<ChatConfig>
     setConfig: Setter<ChatConfig>
@@ -89,6 +92,35 @@ export default function (props: Props) {
         sendMessage();
     }
 
+    let emoTimer:any;
+
+    const randomEmotion = ()=>{
+        const time = Date.now() + '';
+        const d = parseInt(time[time.length-1])||0;
+        if(d % 2 === 0){
+            return
+        }
+        const ar: PetEmotion[] = ['angry','happy','idle','sad','speaking','thinking'];
+        const index = Math.floor(Math.random() * ar.length);
+
+        const wAr: PetEmotion[] = ['happy','idle', 'speaking','thinking'];
+        const wIndex = Math.floor(Math.random() * wAr.length);
+
+        if(d > 4){
+            props.setEmotion(wAr[wIndex]);
+        }else{
+            props.setEmotion(ar[index]);
+        }
+    }
+
+    onMount(()=>{
+        emoTimer = setInterval(randomEmotion,3000);
+    })
+
+    onCleanup(()=>{
+        clearInterval(emoTimer);
+    })
+
     return <div class="chat-input-container">
         <div id="activeDocument" data-mode={props.conversation().mode} style={{ display: props.activeDocument.show ? 'flex' : 'none' }}>
             <span>
@@ -96,6 +128,7 @@ export default function (props: Props) {
             </span>
             <img onclick={() => setChatMode()} src={getModeIcon()} />
         </div>
+        <Pet emotion={props.emotion()} size={80}/>
         <textarea id="message-input" value={inputText()} placeholder={I18nUtils.t('ai.chat.input_placeholder')} autocomplete="off" rows={2} oninput={e => setInputText(e.target.value.trim())} onkeypress={e => onEnterPress(e)}>
 
         </textarea>

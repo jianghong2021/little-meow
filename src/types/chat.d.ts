@@ -30,6 +30,7 @@ interface InitConfig {
     models: ChatModel[]
     config: ChatConfig
     platforms: ModePlatform[]
+    workspace: string
 }
 
 interface Window {
