@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "engines": {
     "vscode": "^1.106.1"
@@ -89,6 +89,14 @@
           "dark": "assets/icons/clear-dark.svg",
           "light": "assets/icons/clear.svg"
         }
+      },
+      {
+        "command": "my-lovely-cat-agent.open",
+        "title": "%view.agent.open%",
+        "icon": {
+          "dark": "assets/icons/ic-agent-dark.svg",
+          "light": "assets/icons/ic-agent.svg"
+        }
       }
     ],
     "languages": [],
@@ -139,6 +147,11 @@
       "view/title": [
         {
           "command": "my-lovely-cat.new",
+          "when": "view == my-lovely-cat-view",
+          "group": "navigation"
+        },
+        {
+          "command": "my-lovely-cat-agent.open",
           "when": "view == my-lovely-cat-view",
           "group": "navigation"
         },

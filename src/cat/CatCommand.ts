@@ -15,6 +15,12 @@ export class CatCommand {
         });
         context.subscriptions.push(settingsDepose);
 
+        // 打开代理
+        const agentDepose = vscode.commands.registerCommand('my-lovely-cat-agent.open', () => {
+            vscode.commands.executeCommand('workbench.view.extension.chat-my-lovely-cat-agent');
+        });
+        context.subscriptions.push(agentDepose);
+
         // 配置token
         const setTokenDepose = vscode.commands.registerCommand('my-lovely-cat.setToken', async () => {
             const db = new ConfigDa(context);

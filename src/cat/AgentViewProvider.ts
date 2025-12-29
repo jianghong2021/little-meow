@@ -185,6 +185,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             });
             return
         }
+
         vscode.window.activeTextEditor?.edit(editor => {
             const fullRange = new vscode.Range(
                 document.positionAt(0),

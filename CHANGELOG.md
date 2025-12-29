@@ -1,9 +1,3 @@
 # Change Log
 
-All notable changes to the "vs-mycat" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+增加AI代理,优化聊天玩法
