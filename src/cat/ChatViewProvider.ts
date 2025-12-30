@@ -6,7 +6,7 @@ import { ConfigDa } from '../data/ConfigDb';
 import { I18nUtils } from '../utils/i18n';
 
 export class ChatViewProvider implements vscode.WebviewViewProvider {
-    static VIEW_ID = 'my-lovely-cat-view';
+    static VIEW_ID = 'chatView';
     private context: vscode.ExtensionContext;
     public projects: ChatDetails[] = [];
     public webview?: vscode.WebviewView;
@@ -64,10 +64,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         });
 
         //内置命令
-        const clearCommdDispose = vscode.commands.registerCommand('my-lovely-cat.clear', this.clearHistory.bind(this));
-        const clearAllCommdDispose = vscode.commands.registerCommand('my-lovely-cat.clearAll', this.clearAllHistory.bind(this));
-        const historyCommdDispose = vscode.commands.registerCommand('my-lovely-cat.history', this.openHistory.bind(this));
-        const newChatCommdDispose = vscode.commands.registerCommand('my-lovely-cat.new', this.newChat.bind(this));
+        const clearCommdDispose = vscode.commands.registerCommand('my-cat.clear', this.clearHistory.bind(this));
+        const clearAllCommdDispose = vscode.commands.registerCommand('my-cat.clearAll', this.clearAllHistory.bind(this));
+        const historyCommdDispose = vscode.commands.registerCommand('my-cat.history', this.openHistory.bind(this));
+        const newChatCommdDispose = vscode.commands.registerCommand('my-cat.new', this.newChat.bind(this));
 
         webviewView.onDidDispose(() => {
             msgDispose.dispose();

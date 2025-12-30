@@ -3,7 +3,7 @@ import { AiModel } from './AiModel';
 import { ConfigDa } from '../data/ConfigDb';
 
 export class CatParticipant {
-    public static ID = 'chat-my-lovely-cat';
+    public static ID = 'my-cat';
     public static model = new AiModel();
     public static config: ConfigDa;
     public static init(context: vscode.ExtensionContext) {

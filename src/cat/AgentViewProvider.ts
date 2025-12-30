@@ -5,14 +5,15 @@ import { I18nUtils } from '../utils/i18n';
 import { AgentMsgDbs } from '../data/AgentMsgDb';
 
 export class AgentViewProvider implements vscode.WebviewViewProvider {
-    static VIEW_ID = 'my-lovely-cat-agent';
+    static VIEW_ID = 'agentView';
     private context: vscode.ExtensionContext;
     public webview?: vscode.WebviewView;
     public model = new AiModel();
     public config: ConfigDa;
     private msg?: AgentMessage;
     private waiting = false;
-    private db: AgentMsgDbs
+    private db: AgentMsgDbs;
+    private docUrl?: vscode.Uri;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -61,7 +62,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         });
 
         //内置命令
-        const clearAgentCommdDispose = vscode.commands.registerCommand('my-lovely-cat-agent.clear', this.clearAgent.bind(this));
+        const clearAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.clear', this.clearAgent.bind(this));
 
         webviewView.onDidDispose(() => {
             msgDispose.dispose();
@@ -140,6 +141,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             });
             return
         }
+        this.docUrl = document.uri;
         this.waiting = true;
         const source = document.getText();
         await this.model.initConfig(this.context);
@@ -163,17 +165,17 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         });
     }
 
-    private inserHistory(msg: ConsoleMessage){
+    private inserHistory(msg: ConsoleMessage) {
         this.db.insert(msg);
     }
 
-    private clearHistory(){
+    private clearHistory() {
         this.db.clear();
     }
 
     private async confirmMessage(msg: AgentMessage) {
         const document = vscode.window.activeTextEditor?.document;
-        if (!document) {
+        if (!document || !this.docUrl) {
             const msg: AgentMessage = {
                 content: '',
                 compare: '',
@@ -185,7 +187,32 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             });
             return
         }
+        if (document.uri.fsPath !== this.docUrl?.fsPath) {
+            const docs = vscode.workspace.textDocuments;
+            let ok = false;
+            for (const doc of docs) {
+                if (doc.uri.fsPath === this.docUrl.fsPath) {
+                    ok = true;
+                    await vscode.window.showTextDocument(doc);
+                    break
+                }
+            }
 
+            if (!ok) {
+                const msg: AgentMessage = {
+                    content: '',
+                    compare: '',
+                    error: I18nUtils.t('agent.doc_is_closed')
+                }
+                this.webview?.webview?.postMessage({
+                    type: 'onPutMessage',
+                    data: msg
+                });
+                return
+            }
+        }
+
+        this.docUrl = undefined;
         vscode.window.activeTextEditor?.edit(editor => {
             const fullRange = new vscode.Range(
                 document.positionAt(0),

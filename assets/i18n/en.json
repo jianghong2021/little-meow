@@ -11,8 +11,10 @@
     "chat.clear.all":"Delete all chats",
     "chat.clear.yes":"Delete",
     "agent.input_placeholder":"Enter the prompt word and press Enter to execute ...",
+    "agent.input_waiting":"Thinking ...",
     "agent.not_activeDocument":"There are no active documents",
     "agent.confirm.tips":"Do you want to update the document? Enter y to confirm, enter c to cancel!",
     "agent.cmd.none_tips":"No need for this operation",
-    "agent.cmd.tips":"Please enter a detailed description of the requirement!"
+    "agent.cmd.tips":"Please enter a detailed description of the requirement!",
+    "agent.doc_is_closed":"The document to be edited has been closed!"
 }

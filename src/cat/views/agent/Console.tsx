@@ -1,5 +1,6 @@
 // components/Console.tsx
 import { createSignal, createEffect, onMount, onCleanup, For, createMemo, Show, batch } from 'solid-js';
+import { marked } from 'marked';
 
 export interface ConsoleProps {
     messages?: ConsoleMessage[];
@@ -58,13 +59,14 @@ export function Console(props: ConsoleProps) {
     }
 
     // 添加消息
-    const addMessage = (type: ConsoleMessage['type'], content: string, data?: any, cache = true) => {
+    const addMessage = async (type: ConsoleMessage['type'], content: string, data?: any, cache = true) => {
         if (isPaused()) return;
 
+        const text = await marked.parse(content);
         const newMessage: ConsoleMessage = {
             id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             type,
-            content,
+            content: text,
             date: Date.now(),
             data
         };

@@ -11,8 +11,10 @@
     "chat.clear.all":"删除全部聊天",
     "chat.clear.yes":"删除",
     "agent.input_placeholder":"输入提示词并按 Enter 执行...",
+    "agent.input_waiting":"正在思考中...",
     "agent.not_activeDocument":"没有正在活动的文档",
     "agent.confirm.tips":"是否更新文档? 输入 y 确认, 输入 c 取消!",
     "agent.cmd.none_tips":"无需此操作",
-    "agent.cmd.tips":"请输入详细描述需求!"
+    "agent.cmd.tips":"请输入详细描述需求!",
+    "agent.doc_is_closed":"将要编辑的文档已被关闭!"
 }

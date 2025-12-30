@@ -17,7 +17,7 @@ export default function () {
             agentConsole.warn(I18nUtils.t('agent.cmd.tips'));
             return
         }
-        agentConsole.warn(I18nUtils.t('agent.input_placeholder'));
+        agentConsole.warn(I18nUtils.t('agent.input_waiting'));
         setWaiting(true);
         vscode.postMessage({ type: 'sendMessage', data: prompt });
     }

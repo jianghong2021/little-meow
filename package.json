@@ -1,8 +1,8 @@
 {
-  "name": "my-lovely-cat",
+  "name": "my-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "engines": {
     "vscode": "^1.106.1"
@@ -35,15 +35,15 @@
   "contributes": {
     "commands": [
       {
-        "command": "my-lovely-cat.ask",
+        "command": "my-cat.ask",
         "title": "%view.open.chat%"
       },
       {
-        "command": "my-lovely-cat.setToken",
+        "command": "my-cat.setToken",
         "title": "%settings.model.token%"
       },
       {
-        "command": "my-lovely-cat.new",
+        "command": "my-cat.new",
         "title": "%view.chat.new%",
         "icon": {
           "dark": "assets/icons/new-chat-dark.svg",
@@ -51,7 +51,7 @@
         }
       },
       {
-        "command": "my-lovely-cat.settings",
+        "command": "my-cat.settings",
         "title": "%view.chat.settings%",
         "icon": {
           "dark": "assets/icons/settings-dark.svg",
@@ -59,7 +59,7 @@
         }
       },
       {
-        "command": "my-lovely-cat.clear",
+        "command": "my-cat.clear",
         "title": "%view.chat.clear%",
         "icon": {
           "dark": "assets/icons/clear-dark.svg",
@@ -67,7 +67,7 @@
         }
       },
       {
-        "command": "my-lovely-cat.clearAll",
+        "command": "my-cat.clearAll",
         "title": "%view.chat.clearAll%",
         "icon": {
           "dark": "assets/icons/clear-dark.svg",
@@ -75,7 +75,7 @@
         }
       },
       {
-        "command": "my-lovely-cat.history",
+        "command": "my-cat.history",
         "title": "%view.chat.history%",
         "icon": {
           "dark": "assets/icons/history-dark.svg",
@@ -83,7 +83,7 @@
         }
       },
       {
-        "command": "my-lovely-cat-agent.clear",
+        "command": "my-cat-agent.clear",
         "title": "%view.agent.clear%",
         "icon": {
           "dark": "assets/icons/clear-dark.svg",
@@ -91,7 +91,7 @@
         }
       },
       {
-        "command": "my-lovely-cat-agent.open",
+        "command": "my-cat-agent.open",
         "title": "%view.agent.open%",
         "icon": {
           "dark": "assets/icons/ic-agent-dark.svg",
@@ -102,7 +102,7 @@
     "languages": [],
     "chatParticipants": [
       {
-        "id": "chat-my-lovely-cat",
+        "id": "my-cat",
         "name": "cat",
         "fullName": "%name%",
         "description": "%description%",
@@ -112,31 +112,31 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "chat-my-lovely-cat-view",
+          "id": "my-cat-chat",
           "title": "%activitybar.main.name%",
           "icon": "assets/icons/menus.svg"
         }
       ],
       "panel": [
         {
-          "id": "chat-my-lovely-cat-agent",
+          "id": "my-cat-agent",
           "title": "%activitybar.main.name%",
           "icon": "assets/icons/menus.svg"
         }
       ]
     },
     "views": {
-      "chat-my-lovely-cat-view": [
+      "my-cat-chat": [
         {
-          "id": "my-lovely-cat-view",
+          "id": "chatView",
           "name": "%activitybar.main.view.name%",
           "icon": "assets/icons/menus.svg",
           "type": "webview"
         }
       ],
-      "chat-my-lovely-cat-agent": [
+      "my-cat-agent": [
         {
-          "id": "my-lovely-cat-agent",
+          "id": "agentView",
           "name": "%activitybar.main.name%",
           "icon": "assets/icons/menus.svg",
           "type": "webview"
@@ -146,38 +146,38 @@
     "menus": {
       "view/title": [
         {
-          "command": "my-lovely-cat.new",
-          "when": "view == my-lovely-cat-view",
+          "command": "my-cat.new",
+          "when": "view == chatView",
           "group": "navigation"
         },
         {
-          "command": "my-lovely-cat-agent.open",
-          "when": "view == my-lovely-cat-view",
+          "command": "my-cat-agent.open",
+          "when": "view == chatView",
           "group": "navigation"
         },
         {
-          "command": "my-lovely-cat.history",
-          "when": "view == my-lovely-cat-view",
+          "command": "my-cat.history",
+          "when": "view == chatView",
           "group": "chat"
         },
         {
-          "command": "my-lovely-cat.clear",
-          "when": "view == my-lovely-cat-view",
+          "command": "my-cat.clear",
+          "when": "view == chatView",
           "group": "chat"
         },
         {
-          "command": "my-lovely-cat.clearAll",
-          "when": "view == my-lovely-cat-view",
+          "command": "my-cat.clearAll",
+          "when": "view == chatView",
           "group": "chat"
         },
         {
-          "command": "my-lovely-cat.setToken",
-          "when": "view == my-lovely-cat-view",
+          "command": "my-cat.setToken",
+          "when": "view == chatView",
           "group": "settings"
         },
         {
-          "command": "my-lovely-cat-agent.clear",
-          "when": "view == my-lovely-cat-agent",
+          "command": "my-cat-agent.clear",
+          "when": "view == agentView",
           "group": "navigation"
         }
       ]
