@@ -9,7 +9,7 @@ export class AgentMsgDbs {
 
     public getAll() {
         const res: ConsoleMessage[] = this.context.globalState.get(this.CACHE_KEY) || [];
-        return res.sort((a, b) => b.date - a.date);
+        return res.sort((a, b) => a.date - b.date);
     }
 
     public one(id: string) {

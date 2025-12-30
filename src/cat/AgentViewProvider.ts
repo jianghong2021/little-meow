@@ -58,6 +58,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                     break;
                 case 'confirmMessage':
                     this.confirmMessage(e.data);
+                    break;
             }
         });
 
@@ -69,6 +70,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             themeDispose.dispose();
             clearAgentCommdDispose.dispose();
         });
+
     }
 
     private getHtml(webview: vscode.Webview) {
@@ -151,6 +153,8 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             data: this.msg
         });
         this.waiting = false;
+
+        vscode.commands.executeCommand('my-cat-agent.open');
     }
 
     private getStatus() {

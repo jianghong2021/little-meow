@@ -16,5 +16,6 @@
     "agent.confirm.tips":"是否更新文档? 输入 y 确认, 输入 c 取消!",
     "agent.cmd.none_tips":"无需此操作",
     "agent.cmd.tips":"请输入详细描述需求!",
+    "agent.cmd.done":"任务已完成!",
     "agent.doc_is_closed":"将要编辑的文档已被关闭!"
 }

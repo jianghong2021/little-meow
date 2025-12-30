@@ -1,5 +1,5 @@
 // components/Console.tsx
-import { createSignal, createEffect, onMount, onCleanup, For, createMemo, Show, batch } from 'solid-js';
+import { createSignal, createEffect, onMount, onCleanup, For, createMemo, Show, batch, Accessor } from 'solid-js';
 import { marked } from 'marked';
 
 export interface ConsoleProps {
@@ -15,6 +15,8 @@ export interface ConsoleProps {
     autoScroll?: boolean;
     className?: string;
     placeholder?: string
+    disabled: Accessor<boolean>
+
 }
 
 export function Console(props: ConsoleProps) {
@@ -234,9 +236,7 @@ export function Console(props: ConsoleProps) {
                                     <span class="message-source">[{msg.source}]</span>
                                 </Show>
 
-                                <span style={{ flex: 1 }}>
-                                    {msg.content}
-                                </span>
+                                <div style={{ flex: 1 }} innerHTML={msg.content}></div>
                             </div>
 
                             <Show when={msg.data}>
@@ -263,6 +263,7 @@ export function Console(props: ConsoleProps) {
             {/* 输入区域 */}
             <div class="console-input-area">
                 <input
+                    disabled={props.disabled()}
                     type="text"
                     class="console-input"
                     value={input()}

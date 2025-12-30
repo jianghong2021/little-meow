@@ -52,7 +52,7 @@ export default function () {
         if (!msg) {
             return
         }
-        setWaiting(false);
+        setWaiting(true);
         setMessage({
             content: msg.content,
             compare: await marked.parse(msg.compare),
@@ -123,6 +123,6 @@ export default function () {
     })
 
     return <div class="panel-container">
-        <Console onExecute={onExecute} onInit={onConsoleInit} onInsert={inserHistory} placeholder={getPlacholder()} />
+        <Console disabled={waiting} onExecute={onExecute} onInit={onConsoleInit} onInsert={inserHistory} placeholder={getPlacholder()} />
     </div>
 }
