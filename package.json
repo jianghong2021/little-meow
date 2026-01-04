@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "MIT",
   "engines": {
     "vscode": "^1.106.1"

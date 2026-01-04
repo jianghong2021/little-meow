@@ -52,7 +52,7 @@ export default function () {
         if (!msg) {
             return
         }
-        setWaiting(true);
+        setWaiting(false);
         setMessage({
             content: msg.content,
             compare: await marked.parse(msg.compare),
