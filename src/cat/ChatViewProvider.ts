@@ -111,7 +111,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const conf = this.config.data;
         conf.model.platform = val as any;
         conf.model.name = this.config.defaultModel?.name || 'deepseek-chat';
-
+        
         await this.config.saveConfig({ ...conf });
 
         this.renderHtml();

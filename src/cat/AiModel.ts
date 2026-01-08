@@ -7,17 +7,11 @@ import { DoubaoModel } from './models/DoubaoModel';
 
 export class AiModel implements AiCommModel {
     private API_TOKEN = '';
-    private lastCheck = 0;
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
     public model?: AiCommModel;
     private lastGetAccount = 0;
 
     public async initConfig(context: vscode.ExtensionContext) {
-        const now = Date.now();
-        if (this.API_TOKEN && this.lastCheck > 0 && now - this.lastCheck < 1000 * 15) {
-            return;
-        }
-        this.lastCheck = now;
         const config = new ConfigDa(context);
         this.API_TOKEN = (await config.getToken()) || '';
 

@@ -30,6 +30,10 @@ export default function () {
     }
 
     const cancelMessage = () => {
+        if (message().content.trim() == '' || message().error) {
+            agentConsole.log(I18nUtils.t('agent.cmd.none_tips'))
+            return
+        }
         setMessage({
             content: '',
             compare: ''

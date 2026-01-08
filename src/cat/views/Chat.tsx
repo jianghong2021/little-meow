@@ -201,7 +201,7 @@ export default function () {
     }
 
     const clearAllHistory = () => {
-        chatDb.clear(conversation().id);
+        chatDb.clearAll();
         vscode.postMessage({ type: 'reload', data: undefined });
     }
 
