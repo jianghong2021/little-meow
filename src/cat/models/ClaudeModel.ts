@@ -6,15 +6,12 @@ export class ClaudeModel implements AiCommModel{
         this.API_TOKEN = token;
     }
     async agent (prompt: string) {
-        return {
-            content: '',
-            compare: ''
-        }
+        return {} as AgentMessage
     };
     async getAccountBalance(){
 
     }
-    chat<T>(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[]){
+    chat<T>(model: string,prompt: string, snippet?: string, memory?: GeneralMessage[]){
         return '' as T;
     }
     
@@ -23,7 +20,7 @@ export class ClaudeModel implements AiCommModel{
         return '';
     }
 
-    async sseChat(model: ChatModelId,prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false,onMsg?:(msg: SseGeneralMessage)=>void){
+    async sseChat(model: string,prompt: string, snippet?: string, memory?: GeneralMessage[],thinking=false,onMsg?:(msg: SseGeneralMessage)=>void){
         
     }
 

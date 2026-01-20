@@ -1,5 +1,5 @@
 import { Show, createEffect, createSignal } from "solid-js"
-import { formatTimeAgo } from "../../../utils/date"
+import { formatTimeAgo,formatTimestamp } from "../../../utils/date"
 import { ChatDb } from '../../../data/ChatDb';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
@@ -9,18 +9,21 @@ import { UiChatDetails } from "../chat-ui";
 interface Props {
     msg: UiChatDetails
     chatDb: ChatDb
+    index: number
     reSendMessage: (id: string, fid: string) => void
     scrollToBottom: () => void
+    deleteMessage: (index: number) => void
 }
 
 hljs.registerLanguage('javascript', javascript);
 
-export default function ({ msg, scrollToBottom, reSendMessage }: Props) {
+export default function ({ index,msg,deleteMessage, scrollToBottom, reSendMessage }: Props) {
 
     const [content, setContent] = createSignal('');
 
     const copyIcon = `${window.initConfig.baseUrl}/icons/copy${window.initConfig.isDark ? '-dark' : ''}.svg`;
     const refreshIcon = `${window.initConfig.baseUrl}/icons/refresh${window.initConfig.isDark ? '-dark' : ''}.svg`;
+    const deleIcon = `${window.initConfig.baseUrl}/icons/delete${window.initConfig.isDark ? '-dark' : ''}.svg`;
 
     const copyMsgContent = async (img: HTMLElement, cont: string) => {
         if (!cont) {
@@ -32,6 +35,8 @@ export default function ({ msg, scrollToBottom, reSendMessage }: Props) {
             img.style.filter = 'none';
         }, 1000)
     }
+
+   
 
     const WaitingEl = <div class="msg waiting">
         <img src={`${window.initConfig.baseUrl}/icons/loading${window.initConfig.isDark ? '-dark' : ''}.svg`} />
@@ -94,8 +99,9 @@ export default function ({ msg, scrollToBottom, reSendMessage }: Props) {
                 <div class="btn-icon" style={{ display: msg.role == 'assistant' ? 'flex' : 'none' }}>
                     <img src={copyIcon} onclick={(e) => copyMsgContent(e.target as any, msg.id)} />
                     <img src={refreshIcon} onclick={() => reSendMessage(msg.id, msg.fid)} />
+                    <img src={deleIcon} onclick={() => deleteMessage(index)} />
                 </div>
-                <span class="message-time">{formatTimeAgo(msg.date)}</span>
+                <span class="message-time" title={formatTimestamp(msg.date)}>{formatTimeAgo(msg.date)}</span>
             </div>
         </Show>
     </div>

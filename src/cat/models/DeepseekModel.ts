@@ -39,7 +39,7 @@ export class DeepseekModel implements AiCommModel {
         this.getAccountBalance();
     }
 
-    public async request(model: ChatModelId, prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
+    public async request(model: string, prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
         if (!this.API_TOKEN) {
             throw Error('请先去[DeepSeek](https://platform.deepseek.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
@@ -72,7 +72,7 @@ export class DeepseekModel implements AiCommModel {
         return code;
     }
 
-    public async requestSSE(model: ChatModelId, prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
+    public async requestSSE(model: string, prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
         if (!this.API_TOKEN) {
             throw Error('请先去[DeepSeek](https://platform.deepseek.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
@@ -156,11 +156,13 @@ export class DeepseekModel implements AiCommModel {
                     {
                         "role": "system", "content": `
                     按照要求改动用户源码(若无源码,则按照要求生成全新源码),将新的源码放于字段"content",改动说明或源码简要放于字段"compare",
-                    "compare"说明尽量简洁表达.
+                    "description"说明尽量简洁表达.
+                    "instruction"根据用户提示词设置,是创建还是编辑.可选值: 'editDocument'|'createDocument'
                     输出示例json:
                     {
                         "content":"const a=1;",
-                        "compare": "改动了函数xx,重新优化此函数"
+                        "description": "改动了函数xx,重新优化此函数",
+                        "instruction": "editDocument"
                     }    
                     ` },
                     { "role": "user", "content": prompt }
@@ -202,7 +204,7 @@ export class DeepseekModel implements AiCommModel {
         vscode.window.setStatusBarMessage(text);
     }
 
-    chat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[]) {
+    chat(model: string, prompt: string, snippet?: string, memory?: GeneralMessage[]) {
         return this.request(model, prompt, snippet, memory);
     }
     async code(prompt: string) {
@@ -210,7 +212,7 @@ export class DeepseekModel implements AiCommModel {
         return this.getCode(prompt);
     }
 
-    async sseChat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
+    async sseChat(model: string, prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
         if (!onMsg) {
             return;
         }
@@ -257,7 +259,8 @@ export class DeepseekModel implements AiCommModel {
     async agent(prompt: string, source?: string) {
         const msg: AgentMessage = {
             content: '',
-            compare: ''
+            description: '',
+            instruction: 'editDocument'
         }
         try {
             const text = await this.agentCode(prompt, source);

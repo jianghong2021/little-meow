@@ -13,9 +13,10 @@
     "agent.input_placeholder":"Enter the prompt word and press Enter to execute ...",
     "agent.input_waiting":"Thinking ...",
     "agent.not_activeDocument":"There are no active documents",
-    "agent.confirm.tips":"Do you want to update the document? Enter y to confirm, enter c to cancel!",
+    "agent.confirm.tips":"Do you want to use it? Enter y to confirm, enter c to cancel!",
     "agent.cmd.none_tips":"No need for this operation",
     "agent.cmd.done":"Task completed!",
     "agent.cmd.tips":"Please enter a detailed description of the requirement!",
-    "agent.doc_is_closed":"The document to be edited has been closed!"
+    "agent.doc_is_closed":"The document to be edited has been closed!",
+    "completion.code.generating":"Generating code ..."
 }

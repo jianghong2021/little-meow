@@ -40,7 +40,7 @@ export class DoubaoModel implements AiCommModel {
         this.getAccountBalance();
     }
 
-    public async request(model: ChatModelId, prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
+    public async request(model: string, prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
         if (!this.API_TOKEN) {
             throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
@@ -73,17 +73,18 @@ export class DoubaoModel implements AiCommModel {
         return code;
     }
 
-    public async requestSSE(model: ChatModelId, prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
+    public async requestSSE(model: string, prompt: string, snippet = '', memory: GeneralMessage[] = [], thinking = false) {
         if (!this.API_TOKEN) {
             throw Error('请先去[火山引擎](https://console.volcengine.com/)官网申请API令牌Token，并在右上角菜单配置');
         }
-        const body = JSON.stringify({
+        const body: { [k: string]: any } = {
             "model": model,
             "temperature": DoubaoTemperature.CODE,
             "max_tokens": 8192,
             "thinking": thinking ? this.thinking.enabled : this.thinking.disabled,
             "messages": [
-                { "role": "system", "content": `
+                {
+                    "role": "system", "content": `
                 你是一只有编程大师称呼的卡通猫咪，昵称: 小喵喵, 回答中随机加上心情emoji.
                 ` },
                 { "role": "system", "content": '回答问题时，内容简练，不要过多不必要的赘述' },
@@ -92,14 +93,17 @@ export class DoubaoModel implements AiCommModel {
                 { "role": "user", "content": prompt }
             ],
             "stream": true
-        });
+        };
+        if (!thinking) {
+            body.thinking = undefined;
+        }
         const res = await fetch(`${this.API_URL}/api/v3/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + this.API_TOKEN
             },
-            body
+            body: JSON.stringify(body)
         });
         const stream = res.body?.getReader();
         if (!stream) {
@@ -162,11 +166,13 @@ export class DoubaoModel implements AiCommModel {
                     {
                         "role": "system", "content": `
                         按照要求改动用户源码(若无源码,则按照要求生成全新源码),将新的源码放于字段"content",改动说明或源码简要放于字段"compare",
-                        "compare"说明尽量简洁表达.
+                        "description"说明尽量简洁表达.
+                        "instruction"根据用户提示词设置,是创建还是编辑.可选值: 'editDocument'|'createDocument'
                         输出示例json:
                         {
                             "content":"const a=1;",
-                            "compare": "改动了函数xx,重新优化此函数(已创建函数xx)"
+                            "description": "改动了函数xx,重新优化此函数(已创建函数xx)",
+                            "instruction": "editDocument"
                         }    
                         ` },
                     { "role": "user", "content": prompt }
@@ -189,7 +195,7 @@ export class DoubaoModel implements AiCommModel {
 
     }
 
-    chat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[]) {
+    chat(model: string, prompt: string, snippet?: string, memory?: GeneralMessage[]) {
         return this.request(model, prompt, snippet, memory);
     }
     async code(prompt: string) {
@@ -197,7 +203,7 @@ export class DoubaoModel implements AiCommModel {
         return this.getCode(prompt);
     }
 
-    async sseChat(model: ChatModelId, prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
+    async sseChat(model: string, prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {
         if (!onMsg) {
             return;
         }
@@ -244,7 +250,8 @@ export class DoubaoModel implements AiCommModel {
     async agent(prompt: string, source?: string) {
         const msg: AgentMessage = {
             content: '',
-            compare: ''
+            description: '',
+            instruction: 'editDocument'
         }
         try {
             const text = await this.agentCode(prompt, source);

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { AiModel } from './AiModel';
+import { I18nUtils } from '../utils/i18n';
 
 export class CompletionProvider implements vscode.InlineCompletionItemProvider {
     private context: vscode.ExtensionContext;
@@ -49,12 +50,11 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
         const prompt = line.trim().replace(this.keywords, '').replaceAll(/[\/\\\#\*]/g, '');
 
         this.grenrating = true;
-
         const lang = this.getDocumentLanguage(document);
         console.log('正在生成: ',`编程语言：${lang}, ${prompt}`);
         const text = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Window,
-            title: "正在生成代码...",
+            title: I18nUtils.t('completion.code.generating'),
             cancellable: false
         }, () => {
 

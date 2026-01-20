@@ -22,22 +22,46 @@ export class ConfigDa {
             ability: 'text'
         },
         {
-            platform: 'doubao',
+            platform: 'volcengine',
             name: 'doubao-seed-1-6-lite-251015',
             label: I18nUtils.t('ai.chat.chat'),
             ability: 'text'
         },
         {
-            platform: 'doubao',
+            platform: 'volcengine',
             name: 'doubao-seed-code-preview-251028',
             label: I18nUtils.t('ai.chat.code'),
+            ability: 'text'
+        },
+        {
+            platform: 'volcengine',
+            name: 'doubao-seed-1-6-flash-250828',
+            label: 'flash',
+            ability: 'text'
+        },
+        {
+            platform: 'volcengine',
+            name: 'glm-4-7-251222',
+            label: 'glm',
+            ability: 'text'
+        },
+        {
+            platform: 'volcengine',
+            name: 'kimi-k2-thinking-251104',
+            label: 'kimi',
+            ability: 'text'
+        },
+        {
+            platform: 'volcengine',
+            name: 'deepseek-v3-2-251201',
+            label: 'dsv3',
             ability: 'text'
         }
     ];
 
     public platforms: ModePlatform[] = [
         'deepseek',
-        'doubao'
+        'volcengine'
     ];
 
     public get defaultModel(){

@@ -1,6 +1,9 @@
+type AgentInstruction = 'editDocument'|'createDocument'
+
 interface AgentMessage {
     content: string
-    compare: string
+    description: string
+    instruction: AgentInstruction
     error?: string
 }
 

@@ -5,7 +5,8 @@ import { Console } from "./agent/Console";
 export default function () {
     const [message, setMessage] = createSignal<AgentMessage>({
         content: "",
-        compare: ""
+        description: '',
+        instruction: 'editDocument'
     });
 
     const [waiting, setWaiting] = createSignal(false);
@@ -36,7 +37,8 @@ export default function () {
         }
         setMessage({
             content: '',
-            compare: ''
+            description: '',
+            instruction: 'editDocument'
         })
     }
 
@@ -47,8 +49,8 @@ export default function () {
         }
         vscode.postMessage({ type: 'confirmMessage', data: message() });
         setMessage({
+            ... message(),
             content: '',
-            compare: message().compare
         })
     }
 
@@ -59,13 +61,14 @@ export default function () {
         setWaiting(false);
         setMessage({
             content: msg.content,
-            compare: await marked.parse(msg.compare),
+            description: await marked.parse(msg.description),
+            instruction: msg.instruction,
             error: msg.error
         });
         if (msg.error) {
             agentConsole.error(msg.error);
         } else {
-            agentConsole.info(msg.compare);
+            agentConsole.info(msg.description);
             agentConsole.warn(I18nUtils.t('agent.confirm.tips'));
         }
     }

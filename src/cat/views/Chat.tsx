@@ -24,7 +24,7 @@ export default function () {
     const [answering, setAnswering] = createSignal(false);
 
     const [config, setConfig] = createSignal(window.initConfig.config);
-    const [emotion,setEmotion] = createSignal<PetEmotion>('happy');
+    const [emotion, setEmotion] = createSignal<PetEmotion>('happy');
 
     const scrollToBottom = () => {
         if (resend()) {
@@ -87,14 +87,18 @@ export default function () {
 
         if (msg.status === 'answering') {
             data[index].setContent(prev => prev + msg.content);
-        }else if(msg.status !== 'waiting' && msg.content.trim() === ''){
+        } else if (msg.status !== 'waiting' && msg.content.trim() === '') {
             data[index].setContent(prev => prev + msg.content);
         } else {
             data[index].setContent(msg.content);
         }
 
-        if (msg.reasoningContent) {
+        if (msg.reasoningContent?.trim() && msg.status === 'answering') {
             data[index].setReasoningContent(prev => prev + msg.reasoningContent);
+        } else if (msg.status === 'waiting') {
+            data[index].setReasoningContent(msg.reasoningContent || '');
+        } else {
+            data[index].setReasoningContent(prev => prev + (msg.reasoningContent || ''));
         }
 
         data[index].setStatus(msg.status);
@@ -121,7 +125,7 @@ export default function () {
         const newAiMsg = { ...aiMsg };
 
         newAiMsg.content = '';
-        newAiMsg.reasoningContent = '';
+        newAiMsg.reasoningContent = undefined;
         newAiMsg.status = 'waiting';
 
         const arg: MessageSendArg = {
@@ -183,7 +187,7 @@ export default function () {
             console.log('信息不存在', msg)
             return;
         }
-        if(msg.status==='ended'){
+        if (msg.status === 'ended') {
             setEmotion('happy');
         }
         updateStatusMsgs(msg);
@@ -203,6 +207,21 @@ export default function () {
     const clearAllHistory = () => {
         chatDb.clearAll();
         vscode.postMessage({ type: 'reload', data: undefined });
+    }
+
+    const deleteMessage = (index: number) => {
+        const msg = messages()[index];
+        if (!msg) {
+            return
+        }
+        msg.setStatus('waiting');
+        chatDb.deleteMessage(msg.id, msg.fid).then(() => {
+            setMessages(prev => {
+                return prev.filter(x => x.id != msg.id && x.id !== msg.fid)
+            })
+        }).catch(() => {
+            msg.setStatus('ended');
+        })
     }
 
     const onDocumentChange = (file?: string) => {
@@ -262,7 +281,7 @@ export default function () {
             </div>
             <For each={messages()}>
                 {
-                    msg => <Message msg={msg} chatDb={chatDb} scrollToBottom={scrollToBottom} reSendMessage={reSendMessage} />
+                    (msg, index) => <Message index={index()} msg={msg} chatDb={chatDb} scrollToBottom={scrollToBottom} reSendMessage={reSendMessage} deleteMessage={deleteMessage} />
                 }
             </For>
         </div>

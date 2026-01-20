@@ -23,6 +23,7 @@ export class ChatDb {
             .limit(50)
             .toArray();
         const ar = res.sort((a, b) => a.date - b.date);
+        console.log(ar)
         return ar;
     }
 
@@ -66,6 +67,13 @@ export class ChatDb {
 
     public async remove(id: string) {
         await db.table(this.TABLE).delete(id);
+    }
+
+    public async deleteMessage(id: string, fid?: string) {
+        await db.table(this.TABLE).delete(id);
+        if (fid) {
+            await db.table(this.TABLE).delete(fid)
+        }
     }
 
     public async clear(id: string) {

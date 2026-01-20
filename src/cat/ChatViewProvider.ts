@@ -246,6 +246,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         await this.model.initConfig(this.context);
         msg.title = prompt.substring(0, 16);
         msg.content = "";
+        msg.reasoningContent = '';
 
         //更新会话标题
         conv.title = prompt;

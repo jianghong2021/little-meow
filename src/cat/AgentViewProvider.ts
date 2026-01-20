@@ -131,22 +131,14 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
 
     private async sendMessage(prompt: string) {
         const document = vscode.window.activeTextEditor?.document;
-        if (!document) {
-            const msg: AgentMessage = {
-                content: '',
-                compare: '',
-                error: I18nUtils.t('agent.not_activeDocument')
-            }
-            this.webview?.webview?.postMessage({
-                type: 'onPutMessage',
-                data: msg
-            });
-            return
-        }
-        this.docUrl = document.uri;
+
+        this.docUrl = document?.uri;
         this.waiting = true;
-        const source = document.getText();
+        let source = document?.getText();
         await this.model.initConfig(this.context);
+        if (/(创建|新建|create|new)/i.test(prompt)) {
+            source = '';
+        }
         this.msg = await this.model.agent(prompt, source);
         this.webview?.webview?.postMessage({
             type: 'onPutMessage',
@@ -178,11 +170,25 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async confirmMessage(msg: AgentMessage) {
+
+        switch (msg.instruction) {
+            case 'editDocument':
+                await this.editDocument(msg);
+                break
+            case 'createDocument':
+                await this.createDocument(msg);
+                break
+        }
+        this.msg = undefined;
+    }
+
+    private async editDocument(msg: AgentMessage) {
         const document = vscode.window.activeTextEditor?.document;
         if (!document || !this.docUrl) {
             const msg: AgentMessage = {
                 content: '',
-                compare: '',
+                description: '',
+                instruction: 'editDocument',
                 error: I18nUtils.t('agent.not_activeDocument')
             }
             this.webview?.webview?.postMessage({
@@ -205,7 +211,8 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             if (!ok) {
                 const msg: AgentMessage = {
                     content: '',
-                    compare: '',
+                    description: '',
+                    instruction: 'editDocument',
                     error: I18nUtils.t('agent.doc_is_closed')
                 }
                 this.webview?.webview?.postMessage({
@@ -225,6 +232,12 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             editor.replace(fullRange, msg.content);
         });
 
-        this.msg = undefined;
+    }
+
+    private async createDocument(msg: AgentMessage) {
+        const doc = await vscode.workspace.openTextDocument({
+            content: msg.content
+        })
+        vscode.window.showTextDocument(doc);
     }
 }
