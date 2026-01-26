@@ -7,7 +7,7 @@ export class CatParticipant {
     public static model = new AiModel();
     public static config: ConfigDa;
     public static init(context: vscode.ExtensionContext) {
-        this.model.initConfig(context);
+        this.model.initConfig(context,'code');
         this.config = new ConfigDa(context);
         const cat = vscode.chat.createChatParticipant(this.ID, this.handler.bind(this));
         cat.iconPath = vscode.Uri.joinPath(context.extensionUri, 'assets/icons/logo.svg');
@@ -21,7 +21,7 @@ export class CatParticipant {
     ): Promise<any> {
         stream.progress('Thinking...');
         try {
-            const res = await this.model.chat(this.config.data.model.name, request.prompt);
+            const res = await this.model.chat(this.config.data.codeModel.name, request.prompt);
             stream.markdown(res);
         } catch (err: any) {
             stream.markdown(err.message || 'unknown error');

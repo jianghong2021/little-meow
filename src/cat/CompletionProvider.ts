@@ -11,7 +11,7 @@ export class CompletionProvider implements vscode.InlineCompletionItemProvider {
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.model = new AiModel();
-        this.model.initConfig(context);
+        this.model.initConfig(context,'code');
     }
 
     static init(context: vscode.ExtensionContext) {

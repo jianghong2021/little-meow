@@ -8,7 +8,7 @@ export class ConfigDa {
         this.context = context;
     }
 
-    public models:ChatModel[] = [
+    public models: ChatModel[] = [
         {
             platform: 'deepseek',
             name: 'deepseek-chat',
@@ -64,27 +64,40 @@ export class ConfigDa {
         'volcengine'
     ];
 
-    public get defaultModel(){
-        const model = this.models.find(x=>{
-            return this.data.model.platform === x.platform;
+    public get defaultChatModel() {
+        const model = this.models.find(x => {
+            return this.data.chatModel.platform === x.platform;
+        });
+        return model
+    }
+
+    public get defaultCodeModel() {
+        const model = this.models.find(x => {
+            return this.data.codeModel.platform === x.platform;
         });
         return model
     }
 
     public get data() {
-        const cache = this.context.globalState.get(this.CACHE_KEY);
-        if (cache) {
-            return cache as ChatConfig;
+        const cache = this.context.globalState.get(this.CACHE_KEY) as ChatConfig;
+        if (cache != undefined && cache.chatModel && cache.codeModel) {
+            return cache;
         }
         const conf: ChatConfig = {
             mode: 'norm',
             thinking: false,
-            model: {
+            chatModel: {
                 platform: 'deepseek',
                 name: 'deepseek-chat',
                 label: 'chat',
                 ability: 'text'
-            }
+            },
+            codeModel: {
+                platform: 'deepseek',
+                name: 'deepseek-chat',
+                label: 'chat',
+                ability: 'text'
+            },
         };
         return conf;
     }
@@ -93,15 +106,21 @@ export class ConfigDa {
         await this.context.globalState.update(this.CACHE_KEY, conf);
     }
 
-    public setToken(token: string){
+    public CacheKey (modalType: ChatConfigModeType){
         const config = this.data;
-        const id = this.context.extension.id + config.model.platform;
-        this.context.secrets.store(id,token);
+        if (modalType === 'chat') {
+            return this.context.extension.id + config.chatModel.platform;
+        }else{
+            return this.context.extension.id + config.codeModel.platform;
+        }
     }
 
-    public async getToken(){
-        const config = this.data;
-        const id = this.context.extension.id + config.model.platform;
-        return await this.context.secrets.get(id);
+    public setToken(token: string,platform: ModePlatform) {
+        const id = this.context.extension.id + platform;
+        this.context.secrets.store(id, token);
+    }
+
+    public async getToken(modalType: ChatConfigModeType) {
+        return await this.context.secrets.get(this.CacheKey(modalType));
     }
 }

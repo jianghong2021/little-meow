@@ -11,19 +11,33 @@ export class AiModel implements AiCommModel {
     public model?: AiCommModel;
     private lastGetAccount = 0;
 
-    public async initConfig(context: vscode.ExtensionContext) {
+    /**初始化模型 */
+    public async initConfig(context: vscode.ExtensionContext, modalType: ChatConfigModeType) {
         const config = new ConfigDa(context);
-        this.API_TOKEN = (await config.getToken()) || '';
+        this.API_TOKEN = (await config.getToken(modalType)) || '';
 
-        if (config.data.model.platform === 'deepseek') {
-            this.model = new DeepseekModel(this.API_TOKEN) as any;
-        } else if (config.data.model.platform === 'claude') {
-            this.model = new ClaudeModel(this.API_TOKEN) as any;
-        } else if (config.data.model.platform === 'gpt') {
-            this.model = new ChatGptModel(this.API_TOKEN) as any;
-        } else if (config.data.model.platform === 'volcengine') {
-            this.model = new DoubaoModel(this.API_TOKEN) as any;
+        if (modalType === 'chat') {
+            if (config.data.chatModel.platform === 'deepseek') {
+                this.model = new DeepseekModel(this.API_TOKEN) as any;
+            } else if (config.data.chatModel.platform === 'claude') {
+                this.model = new ClaudeModel(this.API_TOKEN) as any;
+            } else if (config.data.chatModel.platform === 'gpt') {
+                this.model = new ChatGptModel(this.API_TOKEN) as any;
+            } else if (config.data.chatModel.platform === 'volcengine') {
+                this.model = new DoubaoModel(this.API_TOKEN) as any;
+            }
+        }else{
+            if (config.data.codeModel.platform === 'deepseek') {
+                this.model = new DeepseekModel(this.API_TOKEN) as any;
+            } else if (config.data.codeModel.platform === 'claude') {
+                this.model = new ClaudeModel(this.API_TOKEN) as any;
+            } else if (config.data.codeModel.platform === 'gpt') {
+                this.model = new ChatGptModel(this.API_TOKEN) as any;
+            } else if (config.data.codeModel.platform === 'volcengine') {
+                this.model = new DoubaoModel(this.API_TOKEN) as any;
+            }
         }
+
 
         this.MAX_CONTEXT_SIZE = this.model?.MAX_CONTEXT_SIZE || 0;
 

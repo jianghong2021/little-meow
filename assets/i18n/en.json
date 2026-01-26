@@ -18,5 +18,6 @@
     "agent.cmd.done":"Task completed!",
     "agent.cmd.tips":"Please enter a detailed description of the requirement!",
     "agent.doc_is_closed":"The document to be edited has been closed!",
-    "completion.code.generating":"Generating code ..."
+    "completion.code.generating":"Generating code ...",
+    "agent.code.comm_prompt_placholder":"Setting up common prompt words helps to unify the overall style..."
 }

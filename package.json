@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "license": "MIT",
   "engines": {
     "vscode": "^1.106.1"
@@ -17,6 +17,7 @@
     "my cat",
     "Little Meow",
     "AI Code",
+    "Ai Agent",
     "聊天",
     "编程",
     "小喵喵",
@@ -29,6 +30,10 @@
   "publisher": "webjiangh",
   "icon": "assets/icons/logo.png",
   "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/jhpw/little-meow-meow"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -41,6 +46,14 @@
       {
         "command": "my-cat.setToken",
         "title": "%settings.model.token%"
+      },
+      {
+        "command": "my-cat.setToken.deepseek",
+        "title": "%settings.model.deepseek%"
+      },
+      {
+        "command": "my-cat.setToken.volcengine",
+        "title": "%settings.model.volcengine%"
       },
       {
         "command": "my-cat.new",
@@ -60,7 +73,7 @@
       },
       {
         "command": "my-cat.clear",
-        "title": "%view.chat.clear%",
+        "title": "%view.chat.clearCurrent%",
         "icon": {
           "dark": "assets/icons/clear-dark.svg",
           "light": "assets/icons/clear.svg"
@@ -161,17 +174,12 @@
           "group": "chat"
         },
         {
-          "command": "my-cat.clear",
+          "submenu": "my-cat.clear",
           "when": "view == chatView",
           "group": "chat"
         },
         {
-          "command": "my-cat.clearAll",
-          "when": "view == chatView",
-          "group": "chat"
-        },
-        {
-          "command": "my-cat.setToken",
+          "submenu": "my-cat.setToken",
           "when": "view == chatView",
           "group": "settings"
         },
@@ -180,8 +188,34 @@
           "when": "view == agentView",
           "group": "navigation"
         }
+      ],
+      "my-cat.setToken": [
+        {
+          "command": "my-cat.setToken.deepseek"
+        },
+        {
+          "command": "my-cat.setToken.volcengine"
+        }
+      ],
+      "my-cat.clear":[
+        {
+          "command": "my-cat.clear"
+        },
+        {
+          "command": "my-cat.clearAll"
+        }
       ]
-    }
+    },
+    "submenus": [
+      {
+        "id": "my-cat.setToken",
+        "label": "%settings.model.token%"
+      },
+      {
+        "id": "my-cat.clear",
+        "label": "%view.chat.clear%"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

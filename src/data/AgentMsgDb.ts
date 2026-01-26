@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 export class AgentMsgDbs {
     private CACHE_KEY = 'agent-console';
+    private CACHE_PROMPT_KEY = 'agent-prompt';
     private context: vscode.ExtensionContext;
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -16,6 +17,14 @@ export class AgentMsgDbs {
         return this.getAll().find(x => x.id === id);
     }
 
+    public getCommPrompt() {
+        const prompt = this.context.globalState.get(this.CACHE_PROMPT_KEY) || '';
+        return String(prompt);
+    }
+
+    public setCommPrompt(prompt: string) {
+        this.context.globalState.update(this.CACHE_PROMPT_KEY, prompt);
+    }
 
     public update(id: string, data: ConsoleMessage) {
         const ar = this.getAll();

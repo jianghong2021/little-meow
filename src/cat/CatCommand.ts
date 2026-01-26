@@ -21,18 +21,29 @@ export class CatCommand {
         });
         context.subscriptions.push(agentDepose);
 
-        // 配置token
-        const setTokenDepose = vscode.commands.registerCommand('my-cat.setToken', async () => {
+        // 配置deepseek token
+        const setDeepseekTokenDepose = vscode.commands.registerCommand('my-cat.setToken.deepseek', async () => {
             const db = new ConfigDa(context);
             const token = await vscode.window.showInputBox({
-                title: `请输入【${db.data.model.platform}】API令牌token`,
+                title: `请输入【Deepseek】API令牌token`,
             });
             if (token) {
-                
-                db.setToken(token);
+                db.setToken(token, 'deepseek');
             }
         });
-        context.subscriptions.push(setTokenDepose);
+        context.subscriptions.push(setDeepseekTokenDepose);
+
+        // 配置 volcengine token
+        const setVolcengineTokenDepose = vscode.commands.registerCommand('my-cat.setToken.volcengine', async () => {
+            const db = new ConfigDa(context);
+            const token = await vscode.window.showInputBox({
+                title: `请输入【Volcengine】API令牌token`,
+            });
+            if (token) {
+                db.setToken(token, 'volcengine');
+            }
+        });
+        context.subscriptions.push(setVolcengineTokenDepose);
 
     }
 

@@ -5,6 +5,7 @@ interface ChatDetails {
     conversationId: string
     title: string
     status: ChatDetailsStatus
+    workspace?: string
     content: any
     reasoningContent?: string
     date: number

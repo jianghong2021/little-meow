@@ -14,6 +14,7 @@ interface InitConfig {
 interface AgetnStatus {
     msg?: AgentMessage;
     waiting: boolean
+    commPrompt?: string
     history: ConsoleMessage[]
 }
 

@@ -18,5 +18,6 @@
     "agent.cmd.tips":"请输入详细描述需求!",
     "agent.cmd.done":"任务已完成!",
     "agent.doc_is_closed":"将要编辑的文档已被关闭!",
-    "completion.code.generating":"正在生成代码..."
+    "completion.code.generating":"正在生成代码...",
+    "agent.code.comm_prompt_placholder":"设置公共提示词,有助于整体风格统一..."
 }

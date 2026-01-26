@@ -228,7 +228,7 @@ export function Console(props: ConsoleProps) {
                             <div style={{ display: 'flex', 'align-items': 'flex-start' }}>
                                 <Show when={props.showTimestamp !== false}>
                                     <span class="message-timestamp">
-                                        @cat&gt;
+                                        cat-agent&gt;
                                     </span>
                                 </Show>
 

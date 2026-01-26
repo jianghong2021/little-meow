@@ -33,7 +33,7 @@ export default function (props: Props) {
     }
 
     const getModels = () => {
-        return models.filter(x => x.platform === props.config().model.platform)
+        return models.filter(x => x.platform === props.config().chatModel.platform)
     }
 
     const setChatMode = () => {
@@ -58,7 +58,7 @@ export default function (props: Props) {
             return {
                 ...prev,
                 model: {
-                    ...prev.model,
+                    ...prev.chatModel,
                     name: val as any
                 }
             }
@@ -138,7 +138,7 @@ export default function (props: Props) {
                 <select class="model-select" onchange={(e) => setPlatform(e.target.value)}>
                     <For each={platforms}>
                         {
-                            x => <option value={x} selected={x === props.config().model.platform}>
+                            x => <option value={x} selected={x === props.config().chatModel.platform}>
                                 {x}
                             </option>
                         }
@@ -147,7 +147,7 @@ export default function (props: Props) {
                 <select class="model-select" onchange={(e) => setModel(e.target.value)}>
                     <For each={getModels()}>
                         {
-                            m => <option value={m.name} selected={m.name === props.config().model.name}>
+                            m => <option value={m.name} selected={m.name === props.config().chatModel.name}>
                                 {m.label}
                             </option>
                         }

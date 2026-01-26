@@ -8,7 +8,7 @@ export class ChatDb {
             return;
         }
         db.version(1).stores({
-            chats: '&id, title,conversationId, done,content,date,role,fid, [conversationId+date]'
+            chats: '&id, title,conversationId,workspace, done,content,date,role,fid, [conversationId+date]'
         });
     }
 

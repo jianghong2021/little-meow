@@ -50,6 +50,9 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                 case 'getStatus':
                     this.getStatus();
                     break;
+                case 'updatePrompt':
+                    this.updatePrompt(e.data);
+                    break;
                 case 'inserHistory':
                     this.inserHistory(e.data);
                     break;
@@ -58,6 +61,12 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                     break;
                 case 'confirmMessage':
                     this.confirmMessage(e.data);
+                    break;
+                case 'setModel':
+                    this.setModel(e.data);
+                    break;
+                case 'setPlatform':
+                    this.setPlatform(e.data);
                     break;
             }
         });
@@ -87,6 +96,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         <title>cat-chat</title>
         <link rel="stylesheet" href="${baseUrl}/css/agent.css">
         <link rel="stylesheet" href="${baseUrl}/css/console.css">
+        <link rel="stylesheet" href="${baseUrl}/css/agent-config.css">
     </head>
     <body>
         <div id="app"></div>
@@ -129,17 +139,49 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         });
     }
 
+    private async setPlatform(val: string) {
+        if (!val.trim()) {
+            console.error('model err');
+            return;
+        }
+
+        const conf = this.config.data;
+        conf.codeModel.platform = val as any;
+        conf.codeModel.name = this.config.defaultCodeModel?.name || 'deepseek-chat';
+        
+        await this.config.saveConfig({ ...conf });
+
+        this.renderHtml();
+    }
+
+    private async setModel(val: string) {
+        if (!val.trim()) {
+            console.error('model err');
+            return;
+        }
+
+        const conf = this.config.data;
+        conf.codeModel.name = val as any;
+        await this.config.saveConfig({ ...conf });
+        this.renderHtml();
+    }
+
+    private updatePrompt(commPrompt: string){
+        this.db.setCommPrompt(commPrompt || '');
+    }
+
     private async sendMessage(prompt: string) {
         const document = vscode.window.activeTextEditor?.document;
 
+        const commPrompt = this.db.getCommPrompt();
         this.docUrl = document?.uri;
         this.waiting = true;
         let source = document?.getText();
-        await this.model.initConfig(this.context);
+        await this.model.initConfig(this.context, 'code');
         if (/(创建|新建|create|new)/i.test(prompt)) {
             source = '';
         }
-        this.msg = await this.model.agent(prompt, source);
+        this.msg = await this.model.agent(`${commPrompt}, ${prompt}`, source);
         this.webview?.webview?.postMessage({
             type: 'onPutMessage',
             data: this.msg
@@ -153,6 +195,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         const status: AgetnStatus = {
             msg: this.msg,
             waiting: this.waiting,
+            commPrompt: this.db.getCommPrompt(),
             history: this.db.getAll()
         }
         this.webview?.webview?.postMessage({
@@ -170,7 +213,9 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async confirmMessage(msg: AgentMessage) {
-
+        if (this.docUrl) {
+            msg.instruction = 'editDocument';
+        }
         switch (msg.instruction) {
             case 'editDocument':
                 await this.editDocument(msg);

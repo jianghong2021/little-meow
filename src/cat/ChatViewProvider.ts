@@ -109,8 +109,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
 
         const conf = this.config.data;
-        conf.model.platform = val as any;
-        conf.model.name = this.config.defaultModel?.name || 'deepseek-chat';
+        conf.chatModel.platform = val as any;
+        conf.chatModel.name = this.config.defaultChatModel?.name || 'deepseek-chat';
         
         await this.config.saveConfig({ ...conf });
 
@@ -124,7 +124,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
 
         const conf = this.config.data;
-        conf.model.name = val as any;
+        conf.chatModel.name = val as any;
         await this.config.saveConfig({ ...conf });
         this.renderHtml();
     }
@@ -243,7 +243,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
 
         // 与模型交互
-        await this.model.initConfig(this.context);
+        await this.model.initConfig(this.context,'chat');
         msg.title = prompt.substring(0, 16);
         msg.content = "";
         msg.reasoningContent = '';
@@ -259,7 +259,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             }
             return m
         })
-        this.model.sseChat(this.config.data.model.name, prompt, activeFile, modalMemory, this.config.data.thinking, data => {
+        this.model.sseChat(this.config.data.chatModel.name, prompt, activeFile, modalMemory, this.config.data.thinking, data => {
             const answer: ChatDetails = {
                 ...msg,
                 content: data.content || '',

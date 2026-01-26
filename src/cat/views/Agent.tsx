@@ -1,6 +1,7 @@
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { marked } from 'marked';
 import { Console } from "./agent/Console";
+import Config from "./agent/Config";
 
 export default function () {
     const [message, setMessage] = createSignal<AgentMessage>({
@@ -9,6 +10,7 @@ export default function () {
         instruction: 'editDocument'
     });
 
+    const [commPrompt, setCommPrompt] = createSignal('');
     const [waiting, setWaiting] = createSignal(false);
 
     const sendMessage = (prompt: string) => {
@@ -20,7 +22,10 @@ export default function () {
         }
         agentConsole.warn(I18nUtils.t('agent.input_waiting'));
         setWaiting(true);
-        vscode.postMessage({ type: 'sendMessage', data: prompt });
+        vscode.postMessage({
+            type: 'sendMessage',
+            data: prompt
+        });
     }
 
     const getPlacholder = () => {
@@ -49,7 +54,7 @@ export default function () {
         }
         vscode.postMessage({ type: 'confirmMessage', data: message() });
         setMessage({
-            ... message(),
+            ...message(),
             content: '',
         })
     }
@@ -74,6 +79,7 @@ export default function () {
     }
 
     const onStatus = (e: AgetnStatus) => {
+        setCommPrompt(e.commPrompt || '');
         agentConsole.setMessages(e.history || []);
         if (e.msg) {
             onServerPutMessage(e.msg);
@@ -120,6 +126,11 @@ export default function () {
         agentConsole.log(I18nUtils.t('ai.chat.input_placeholder'), undefined, false);
     }
 
+    const updateCommPrompt = (prompt: string) => {
+        setCommPrompt(prompt.trim());
+        vscode.postMessage({ type: 'updatePrompt', data: prompt.trim() });
+    }
+
     onMount(() => {
         window.addEventListener('message', onmessage);
         vscode.postMessage({ type: 'getStatus', data: undefined });
@@ -131,5 +142,6 @@ export default function () {
 
     return <div class="panel-container">
         <Console disabled={waiting} onExecute={onExecute} onInit={onConsoleInit} onInsert={inserHistory} placeholder={getPlacholder()} />
+        <Config answering={waiting} prompt={commPrompt} setPrompt={updateCommPrompt}/>
     </div>
 }

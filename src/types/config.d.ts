@@ -16,8 +16,11 @@ type ChatModel = {
     ability: ModeAbility
 }
 
+type ChatConfigModeType = 'chat'|'code'
+
 interface ChatConfig {
     mode: ChatConfigMode
     thinking: boolean
-    model: ChatModel
+    chatModel: ChatModel
+    codeModel: ChatModel
 }
