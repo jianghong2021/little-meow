@@ -1,14 +1,18 @@
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 import { marked } from 'marked';
 import { Console } from "./agent/Console";
 import Config from "./agent/Config";
+import { AgentMsgDbs } from "../../data/AgentMsgDb";
 
+const db = new AgentMsgDbs();
 export default function () {
     const [message, setMessage] = createSignal<AgentMessage>({
         content: "",
         description: '',
         instruction: 'editDocument'
     });
+
+    const workspace = window.initConfig.workspace;
 
     const [commPrompt, setCommPrompt] = createSignal('');
     const [waiting, setWaiting] = createSignal(false);
@@ -24,7 +28,7 @@ export default function () {
         setWaiting(true);
         vscode.postMessage({
             type: 'sendMessage',
-            data: prompt
+            data: `${commPrompt()} ,${prompt}`
         });
     }
 
@@ -78,9 +82,7 @@ export default function () {
         }
     }
 
-    const onStatus = (e: AgetnStatus) => {
-        setCommPrompt(e.commPrompt || '');
-        agentConsole.setMessages(e.history || []);
+    const onStatus = (e: AgentStatus) => {
         if (e.msg) {
             onServerPutMessage(e.msg);
         }
@@ -88,11 +90,18 @@ export default function () {
     }
 
     const clearHistory = () => {
+        db.removeAll(workspace);
         agentConsole.clear();
     }
 
-    const inserHistory = (msg: ConsoleMessage) => {
-        vscode.postMessage({ type: 'inserHistory', data: msg });
+    const clearAgent = () => {
+        db.clear();
+        agentConsole.clear();
+        setCommPrompt('');
+    }
+
+    const inserMessage = (msg: ConsoleMessage) => {
+        db.insert(msg);
     }
 
     const onmessage = (e: MessageEvent) => {
@@ -103,6 +112,9 @@ export default function () {
                 break
             case 'onStatus':
                 onStatus(data);
+                break
+            case 'clearAgent':
+                clearAgent()
                 break
             case 'clearHistory':
                 clearHistory();
@@ -118,7 +130,7 @@ export default function () {
                 cancelMessage();
                 break
             default:
-                sendMessage(command)
+                sendMessage(command);
         }
     }
 
@@ -126,12 +138,23 @@ export default function () {
         agentConsole.log(I18nUtils.t('ai.chat.input_placeholder'), undefined, false);
     }
 
-    const updateCommPrompt = (prompt: string) => {
-        setCommPrompt(prompt.trim());
-        vscode.postMessage({ type: 'updatePrompt', data: prompt.trim() });
+    const updateCommPrompt = (data: AgentCommPrompt) => {
+        setCommPrompt(data.prompt.trim());
+        db.setCommPrompt(data);
+    }
+
+    const init = async () => {
+        const prompt = await db.getCommPrompt(workspace);
+        setCommPrompt(prompt?.prompt||'');
+
+        const ar = await db.getAll(workspace);
+        agentConsole.loadHistory(ar);
     }
 
     onMount(() => {
+        db.init().then(() => {
+            init()
+        })
         window.addEventListener('message', onmessage);
         vscode.postMessage({ type: 'getStatus', data: undefined });
     })
@@ -141,7 +164,7 @@ export default function () {
     })
 
     return <div class="panel-container">
-        <Console disabled={waiting} onExecute={onExecute} onInit={onConsoleInit} onInsert={inserHistory} placeholder={getPlacholder()} />
-        <Config answering={waiting} prompt={commPrompt} setPrompt={updateCommPrompt}/>
+        <Console disabled={waiting} onExecute={onExecute} onInit={onConsoleInit} onInsert={inserMessage} placeholder={getPlacholder()} />
+        <Config answering={waiting} prompt={commPrompt} updateCommPrompt={updateCommPrompt} />
     </div>
 }

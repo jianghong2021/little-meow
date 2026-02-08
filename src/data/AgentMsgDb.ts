@@ -1,82 +1,81 @@
-import * as vscode from 'vscode';
+import { db, tableExists } from '.';
 
 export class AgentMsgDbs {
-    private CACHE_KEY = 'agent-console';
-    private CACHE_PROMPT_KEY = 'agent-prompt';
-    private context: vscode.ExtensionContext;
-    constructor(context: vscode.ExtensionContext) {
-        this.context = context;
+
+    private TABLE = 'agent-msg';
+    private CONFIG_TABLE = 'agent-prompt';
+    public async init() {
+        if (!await tableExists(this.TABLE)) {
+            db.version(1).stores({
+                'agent-msg': '&id,workspace,type,source,data,content,date,[workspace+date]'
+            });
+        }
+        if (!await tableExists(this.CONFIG_TABLE)) {
+            db.version(1).stores({
+                'agent-prompt': '&id,workspace,prompt'
+            });
+        }
     }
 
-    public getAll() {
-        const res: ConsoleMessage[] = this.context.globalState.get(this.CACHE_KEY) || [];
+    public async getAll(workspace: string,limit = 50) {
+        const res: ConsoleMessage[] = await db.table(this.TABLE).where('workspace').equals(workspace).limit(limit).toArray();
         return res.sort((a, b) => a.date - b.date);
     }
 
-    public one(id: string) {
-        return this.getAll().find(x => x.id === id);
+    public async one(id: string) {
+        const res = await db.table(this.TABLE).get(id);
+        return res as ConsoleMessage | undefined;
     }
 
-    public getCommPrompt() {
-        const prompt = this.context.globalState.get(this.CACHE_PROMPT_KEY) || '';
-        return String(prompt);
+    public async getCommPrompt(workspace: string) {
+        const res = await db.table(this.CONFIG_TABLE).where('workspace').equals(workspace).first();
+        return res as AgentCommPrompt | undefined;
     }
 
-    public setCommPrompt(prompt: string) {
-        this.context.globalState.update(this.CACHE_PROMPT_KEY, prompt);
-    }
-
-    public update(id: string, data: ConsoleMessage) {
-        const ar = this.getAll();
-        for (let i = 0; i < ar.length; i++) {
-            if (ar[i].id === id) {
-                ar[i] = { ...data };
-                break;
-            }
+    public async setCommPrompt(data: AgentCommPrompt) {
+        const old = await this.getCommPrompt(data.workspace);
+        if(old){
+            await db.table(this.CONFIG_TABLE).update(old.id,data)
+        }else{
+            await db.table(this.CONFIG_TABLE).add(data)
         }
-
-        this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
-    private createID() {
-        const str = 'qwertyuiopasdfghjklzxcvbnm';
-        const ar: string[] = [];
-        const now = Date.now();
-        for (let i = 0; i < 16; i++) {
-            const r = Math.floor(Math.random() * str.length);
-            if (now % 2) {
-                ar.push(str[i]);
+    public async update(id: string, data: ConsoleMessage) {
+        const old = await this.one(id);
+        if (old) {
+            await db.table(this.TABLE).update(id, { ...data });
+        }
+    }
+
+    public async addOrUpdate(data: ConsoleMessage) {
+        try {
+            const old = await this.one(data.id);
+            if (old) {
+                await this.update(old.id, data);
             } else {
-                ar.push(str[str.length - i - 1]);
+                await this.insert(data);
             }
+        } catch (err) {
+            console.error(data)
+            console.error(err)
         }
-        const nowStr = now.toString();
-        const dateAr: string[] = [];
-        for (let i = 0; i < nowStr.length; i++) {
-            const index = parseInt(nowStr[i]);
-            dateAr.push(str[index]);
-        }
-        return `${ar.join('')}-${dateAr.join('')}`;
     }
 
-    public insert(data: ConsoleMessage) {
-        data.id = this.createID();
-        const ar = this.getAll();
-        ar.push(data);
-        this.context.globalState.update(this.CACHE_KEY, ar);
-        return data;
+    public async insert(data: ConsoleMessage) {
+        await db.table(this.TABLE).add(data)
     }
 
     public remove(id: string) {
-        const ar = this.getAll().filter(x => x.id !== id);
-        this.context.globalState.update(this.CACHE_KEY, ar);
+        return db.table(this.TABLE).delete(id)
     }
 
-    public removeAll() {
-        this.context.globalState.update(this.CACHE_KEY, []);
+    public async removeAll(workspace: string) {
+        await db.table(this.TABLE).where("workspace").equals(workspace).delete();
     }
 
-    public clear() {
-        this.context.globalState.update(this.CACHE_KEY, undefined);
+    public async clear() {
+        await db.table(this.TABLE).clear();
+        await db.table(this.CONFIG_TABLE).clear();
     }
 }

@@ -14,6 +14,7 @@
     "view.chat.clear.success": "Chat cleared",
     "view.chat.history": "Chat History",
     "view.chat.new": "New Chat",
-    "view.agent.clear": "Clear History",
+    "view.agent.delete": "Clear History",
+    "view.agent.clear": "Clear All History",
     "view.agent.open": "Open Agent"
 }

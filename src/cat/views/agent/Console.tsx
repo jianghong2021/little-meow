@@ -1,6 +1,7 @@
 // components/Console.tsx
 import { createSignal, createEffect, onMount, onCleanup, For, createMemo, Show, batch, Accessor } from 'solid-js';
 import { marked } from 'marked';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface ConsoleProps {
     messages?: ConsoleMessage[];
@@ -29,6 +30,8 @@ export function Console(props: ConsoleProps) {
     const [isPaused, setIsPaused] = createSignal(false);
     const [scrollRef, setScrollRef] = createSignal<HTMLDivElement>();
     const [controlsShow, setControlsShow] = createSignal(false);
+
+    const workspace = window.initConfig.workspace;
 
     // 消息计数器
     const messageCounts = createMemo(() => {
@@ -66,10 +69,11 @@ export function Console(props: ConsoleProps) {
 
         const text = await marked.parse(content);
         const newMessage: ConsoleMessage = {
-            id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: uuidv4(),
             type,
             content: text,
             date: Date.now(),
+            workspace: workspace,
             data
         };
 
@@ -96,9 +100,7 @@ export function Console(props: ConsoleProps) {
 
         addMessage('command', `${cmd}`);
 
-        if (props.onExecute) {
-            props.onExecute(cmd);
-        }
+        props.onExecute?.(cmd);
 
         setInput('');
     };
@@ -109,6 +111,12 @@ export function Console(props: ConsoleProps) {
             props.onClear();
         }
     };
+
+    const loadHistory = (data: ConsoleMessage[]) => {
+        data.forEach(msg => {
+            addMessage(msg.type, msg.content, msg.data, false)
+        })
+    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -140,6 +148,7 @@ export function Console(props: ConsoleProps) {
         setMessages,
         pause: () => setIsPaused(true),
         resume: () => setIsPaused(false),
+        loadHistory: (data: ConsoleMessage[]) => loadHistory(data)
     };
 
     onMount(() => {
@@ -228,7 +237,7 @@ export function Console(props: ConsoleProps) {
                             <div style={{ display: 'flex', 'align-items': 'flex-start' }}>
                                 <Show when={props.showTimestamp !== false}>
                                     <span class="message-timestamp">
-                                        cat-agent&gt;
+                                        &gt;
                                     </span>
                                 </Show>
 

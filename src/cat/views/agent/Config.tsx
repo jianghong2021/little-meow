@@ -1,17 +1,19 @@
 import { Accessor, createSignal, For, Setter } from 'solid-js';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
     prompt: Accessor<string>
-    setPrompt: (prompt: string) => void
+    updateCommPrompt: (data: AgentCommPrompt) => void
     answering: Accessor<boolean>
 }
 
 export default function (props: Props) {
 
-    const { prompt, setPrompt } = props;
+    const { prompt } = props;
     const platforms = window.initConfig.platforms;
     const models = window.initConfig.models;
     const [config, setConfig] = createSignal(window.initConfig.config);
+    const workspace = window.initConfig.workspace;
 
     const setPlatform = (val: string) => {
         if (props.answering()) {
@@ -31,13 +33,23 @@ export default function (props: Props) {
         vscode.postMessage({ type: 'setModel', data: val });
     }
 
+    const updateCommPrompt = (prompt: string)=>{
+        const data: AgentCommPrompt = {
+            id: uuidv4(),
+            workspace: workspace,
+            prompt: prompt.trim()
+        }
+
+        props.updateCommPrompt(data);
+    }
+
     return (
         <div class="agent-config">
             <textarea
                 class="agent-config-input"
                 placeholder={I18nUtils.t('agent.code.comm_prompt_placholder')}
                 value={prompt()}
-                onInput={(e) => setPrompt(e.currentTarget.value)}
+                onInput={(e) => updateCommPrompt(e.currentTarget.value)}
             />
             <div class="model-box">
                 <select class="model-select" onchange={(e) => setPlatform(e.target.value)}>

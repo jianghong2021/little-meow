@@ -35,6 +35,18 @@ export class ConfigDa {
         },
         {
             platform: 'volcengine',
+            name: 'doubao-seed-1-8-251228',
+            label: 'seed-18',
+            ability: 'text'
+        },
+        {
+            platform: 'volcengine',
+            name: 'doubao-seed-1-6-vision-250815',
+            label: 'seed-16',
+            ability: 'text'
+        },
+        {
+            platform: 'volcengine',
             name: 'doubao-seed-1-6-flash-250828',
             label: 'flash',
             ability: 'text'

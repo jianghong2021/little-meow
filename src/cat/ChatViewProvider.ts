@@ -316,6 +316,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         return db.insert(conv);
     }
 
+    private getWorkspace(){
+            const ar = vscode.workspace.workspaceFolders;
+            if(!ar){
+                return
+            }
+            const activeFile = vscode.window.activeTextEditor?.document.uri;
+            if(activeFile){
+                const f = vscode.workspace.getWorkspaceFolder(activeFile);
+                return f?.uri?.fsPath;
+            }
+            if(ar[0]){
+                return ar[0].uri.fsPath
+            }
+        }
+
     private getHtml(webview: vscode.Webview) {
 
         let codeCssUrl = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'assets/css/code.css'));
@@ -328,6 +343,8 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const conversation = this.getConversation();
 
         const config = this.config.data;
+
+        const workspace = this.getWorkspace();
 
         return `
         <!DOCTYPE html>
@@ -350,6 +367,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             platforms: ${JSON.stringify(this.config.platforms)},
             models: ${JSON.stringify(this.config.models)},
             config: ${JSON.stringify(config)},
+            workspace: '${workspace||''}',
         }
         window.I18nUtils = {
             messages: ${JSON.stringify(I18nUtils.messages)},

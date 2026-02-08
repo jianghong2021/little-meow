@@ -8,22 +8,22 @@ export class ChatDb {
             return;
         }
         db.version(1).stores({
-            chats: '&id, title,conversationId,workspace, done,content,date,role,fid, [conversationId+date]'
+            'chats': '&id, title,conversationId,workspace, done,content,date,role,fid, [conversationId+date+workspace]'
         });
     }
 
-    public async getAll(conversationId: string) {
+    public async getAll(conversationId: string, workspace: string) {
         const res: ChatDetails[] = await db.table(this.TABLE)
             .where('[conversationId+date]')
             .between(
                 [conversationId, Dexie.minKey],
                 [conversationId, Dexie.maxKey]
             )
+            .and(x => x.workspace == workspace)
             .reverse()
             .limit(50)
             .toArray();
         const ar = res.sort((a, b) => a.date - b.date);
-        console.log(ar)
         return ar;
     }
 

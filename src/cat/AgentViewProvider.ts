@@ -12,12 +12,10 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     public config: ConfigDa;
     private msg?: AgentMessage;
     private waiting = false;
-    private db: AgentMsgDbs;
     private docUrl?: vscode.Uri;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
-        this.db = new AgentMsgDbs(context);
         this.config = new ConfigDa(context);
     }
     static register(context: vscode.ExtensionContext) {
@@ -30,7 +28,6 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, token: vscode.CancellationToken): Thenable<void> | void {
         webviewView.webview.options = {
             enableScripts: true,
-
         };
         this.webview = webviewView;
         webviewView.webview.html = this.getHtml(webviewView.webview);
@@ -50,15 +47,6 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                 case 'getStatus':
                     this.getStatus();
                     break;
-                case 'updatePrompt':
-                    this.updatePrompt(e.data);
-                    break;
-                case 'inserHistory':
-                    this.inserHistory(e.data);
-                    break;
-                case 'clearHistory':
-                    this.clearHistory();
-                    break;
                 case 'confirmMessage':
                     this.confirmMessage(e.data);
                     break;
@@ -72,12 +60,14 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         });
 
         //内置命令
-        const clearAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.clear', this.clearAgent.bind(this));
+        const clearAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.delete', this.deleteAgent.bind(this));
+        const clearAllAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.clear', this.clearAgent.bind(this));
 
         webviewView.onDidDispose(() => {
             msgDispose.dispose();
             themeDispose.dispose();
             clearAgentCommdDispose.dispose();
+            clearAllAgentCommdDispose.dispose();
         });
 
     }
@@ -86,7 +76,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         //基础路径
         const baseUrl = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'assets'));
         const config = this.config.data;
-
+        const workspace = this.getWorkspace();
         return `
             <!DOCTYPE html>
     <html lang="zh-CN">
@@ -107,7 +97,8 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                 platforms: ${JSON.stringify(this.config.platforms)},
                 models: ${JSON.stringify(this.config.models)},
                 config: ${JSON.stringify(config)},
-                msg: ${this.msg ? JSON.stringify(this.msg) : undefined}
+                msg: ${this.msg ? JSON.stringify(this.msg) : undefined},
+                workspace: '${workspace || ''}',
             }
             window.I18nUtils = {
                 messages: ${JSON.stringify(I18nUtils.messages)},
@@ -131,12 +122,40 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    private clearAgent() {
-        this.clearHistory();
+    private getWorkspace() {
+        const ar = vscode.workspace.workspaceFolders;
+        if (!ar) {
+            return
+        }
+        const activeFile = vscode.window.activeTextEditor?.document.uri;
+        if (activeFile) {
+            const f = vscode.workspace.getWorkspaceFolder(activeFile);
+            return f?.uri?.fsPath;
+        }
+        if (ar[0]) {
+            return ar[0].uri.fsPath
+        }
+    }
+
+    private deleteAgent() {
         this.webview?.webview?.postMessage({
             type: 'clearHistory',
             data: undefined
         });
+    }
+
+    private async clearAgent() {
+        const res = await vscode.window.showWarningMessage(I18nUtils.t('chat.clear.all'), {
+            modal: true
+        }, I18nUtils.t('chat.clear.yes'));
+        if (res !== undefined) {
+            //删除全部聊天
+            this.webview?.webview?.postMessage({
+                type: 'clearAgent',
+                data: undefined
+            });
+        }
+
     }
 
     private async setPlatform(val: string) {
@@ -148,7 +167,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         const conf = this.config.data;
         conf.codeModel.platform = val as any;
         conf.codeModel.name = this.config.defaultCodeModel?.name || 'deepseek-chat';
-        
+
         await this.config.saveConfig({ ...conf });
 
         this.renderHtml();
@@ -166,14 +185,9 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         this.renderHtml();
     }
 
-    private updatePrompt(commPrompt: string){
-        this.db.setCommPrompt(commPrompt || '');
-    }
-
     private async sendMessage(prompt: string) {
         const document = vscode.window.activeTextEditor?.document;
 
-        const commPrompt = this.db.getCommPrompt();
         this.docUrl = document?.uri;
         this.waiting = true;
         let source = document?.getText();
@@ -181,7 +195,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         if (/(创建|新建|create|new)/i.test(prompt)) {
             source = '';
         }
-        this.msg = await this.model.agent(`${commPrompt}, ${prompt}`, source);
+        this.msg = await this.model.agent(prompt, source);
         this.webview?.webview?.postMessage({
             type: 'onPutMessage',
             data: this.msg
@@ -192,24 +206,14 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     }
 
     private getStatus() {
-        const status: AgetnStatus = {
+        const status: AgentStatus = {
             msg: this.msg,
             waiting: this.waiting,
-            commPrompt: this.db.getCommPrompt(),
-            history: this.db.getAll()
         }
         this.webview?.webview?.postMessage({
             type: 'onStatus',
             data: status
         });
-    }
-
-    private inserHistory(msg: ConsoleMessage) {
-        this.db.insert(msg);
-    }
-
-    private clearHistory() {
-        this.db.clear();
     }
 
     private async confirmMessage(msg: AgentMessage) {

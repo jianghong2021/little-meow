@@ -2,7 +2,7 @@
   "name": "my-lovely-cat",
   "displayName": "%name%",
   "description": "%description%",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "MIT",
   "engines": {
     "vscode": "^1.106.1"
@@ -104,6 +104,14 @@
         }
       },
       {
+        "command": "my-cat-agent.delete",
+        "title": "%view.agent.delete%",
+        "icon": {
+          "dark": "assets/icons/delete-dark.svg",
+          "light": "assets/icons/delete.svg"
+        }
+      },
+      {
         "command": "my-cat-agent.open",
         "title": "%view.agent.open%",
         "icon": {
@@ -182,6 +190,11 @@
           "submenu": "my-cat.setToken",
           "when": "view == chatView",
           "group": "settings"
+        },
+        {
+          "command": "my-cat-agent.delete",
+          "when": "view == agentView",
+          "group": "navigation"
         },
         {
           "command": "my-cat-agent.clear",

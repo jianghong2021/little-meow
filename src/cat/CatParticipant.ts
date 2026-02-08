@@ -7,7 +7,7 @@ export class CatParticipant {
     public static model = new AiModel();
     public static config: ConfigDa;
     public static init(context: vscode.ExtensionContext) {
-        this.model.initConfig(context,'code');
+        this.model.initConfig(context,'chat');
         this.config = new ConfigDa(context);
         const cat = vscode.chat.createChatParticipant(this.ID, this.handler.bind(this));
         cat.iconPath = vscode.Uri.joinPath(context.extensionUri, 'assets/icons/logo.svg');

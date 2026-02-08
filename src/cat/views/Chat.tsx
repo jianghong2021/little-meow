@@ -5,7 +5,6 @@ import InputBox from "./chat/InputBox";
 import { v4 as uuidv4 } from 'uuid';
 import { getFileName } from "../../utils/file";
 import { UiChatDetails } from "./chat-ui";
-import { Pet } from "./chat/Pet";
 
 const chatDb = new ChatDb();
 
@@ -17,6 +16,8 @@ export default function () {
         file: getFileName(window.initConfig.activeDocument || ''),
         show: window.initConfig.activeDocument ? true : false
     })
+
+    const workspace = window.initConfig.workspace;
 
     const [resend, setResend] = createSignal(false);
 
@@ -68,6 +69,7 @@ export default function () {
             date: x.date,
             role: x.role,
             fid: x.fid,
+            workspace: workspace,
             reasoningContent: x.reasoningContent(),
         }
 
@@ -153,6 +155,7 @@ export default function () {
             date: Date.now(),
             role: "user",
             fid: '',
+            workspace,
             conversationId: conversation().id
         }
         updateStatusMsgs(userMsg);
@@ -166,6 +169,7 @@ export default function () {
             date: Date.now(),
             role: "assistant",
             fid: userMsg.id,
+            workspace,
             conversationId: conversation().id
         }
         //进入本地
@@ -190,6 +194,7 @@ export default function () {
         if (msg.status === 'ended') {
             setEmotion('happy');
         }
+        msg.workspace = workspace;
         updateStatusMsgs(msg);
         setAnswering(false);
     }
@@ -255,7 +260,7 @@ export default function () {
 
     const init = () => {
         chatDb.init().then(() => {
-            return chatDb.getAll(conversation().id)
+            return chatDb.getAll(conversation().id,workspace)
         }).then(res => {
 
             setMessages(res.map(x => {

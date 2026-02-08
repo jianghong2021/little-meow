@@ -11,17 +11,22 @@ interface InitConfig {
     msg?: AgentMessage
 }
 
-interface AgetnStatus {
+interface AgentStatus {
     msg?: AgentMessage;
     waiting: boolean
-    commPrompt?: string
-    history: ConsoleMessage[]
+}
+
+interface AgentCommPrompt{
+    id: string
+    workspace: string
+    prompt: string
 }
 
 interface ConsoleMessage {
     id: string;
     type: 'log' | 'info' | 'warn' | 'error' | 'debug' | 'command' | 'system';
     content: string;
+    workspace: string
     date: number;
     source?: string;
     data?: any;
@@ -38,6 +43,7 @@ interface AgentConsole {
     resume: () => void
     getMessages: () => ConsoleMessage[]
     setMessages: (ar: ConsoleMessage[])=>void
+    loadHistory: (data: ConsoleMessage[])=>void
 }
 
 declare const agentConsole: AgentConsole
