@@ -5,6 +5,7 @@
     "ai.chat.chat":"聊天",
     "ai.chat.hello":"您好！我是您的AI助手，有什么可以帮您的吗？",
     "ai.chat.input_placeholder":"我需要做些什么呢?",
+    "ai.chat.now":"刚刚",
     "ai.chat.waiting":"请稍等...",
     "ai.chat.thinking_cont":"AI思考",
     "chat.clear.current":"删除当前聊天",
@@ -19,5 +20,6 @@
     "agent.cmd.done":"任务已完成!",
     "agent.doc_is_closed":"将要编辑的文档已被关闭!",
     "completion.code.generating":"正在生成代码...",
-    "agent.code.comm_prompt_placholder":"设置公共提示词,有助于整体风格统一..."
+    "agent.code.comm_prompt_placholder":"设置公共提示词,有助于整体风格统一",
+    "agent.task.empty": "没有任务"
 }

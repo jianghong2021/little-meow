@@ -1,6 +1,7 @@
-type AgentInstruction = 'editDocument'|'createDocument'
+type AgentInstruction = 'editDocument' | 'createDocument'
 
 interface AgentMessage {
+    prompt: string
     content: string
     description: string
     instruction: AgentInstruction
@@ -11,16 +12,30 @@ interface InitConfig {
     msg?: AgentMessage
 }
 
-interface AgentStatus {
-    msg?: AgentMessage;
-    waiting: boolean
+type AgentTaskStatus = 'done' | 'waiting' | 'failed'
+interface AgentTask {
+    id: string
+    prompt: string
+    docUrl?: any
+    msg?: AgentMessage
 }
 
-interface AgentCommPrompt{
+interface AgentMessageRequest {
+    commPrompt: string
+    prompt: string
+}
+
+interface AgentStatus {
+    tasks: AgentTask[]
+}
+
+interface AgentCommPrompt {
     id: string
     workspace: string
     prompt: string
 }
+
+type AgentPanelMode = 'config' | 'tasks'
 
 interface ConsoleMessage {
     id: string;
@@ -30,6 +45,7 @@ interface ConsoleMessage {
     date: number;
     source?: string;
     data?: any;
+    status: AgentTaskStatus
 }
 
 interface AgentConsole {
@@ -42,8 +58,8 @@ interface AgentConsole {
     pause: () => void
     resume: () => void
     getMessages: () => ConsoleMessage[]
-    setMessages: (ar: ConsoleMessage[])=>void
-    loadHistory: (data: ConsoleMessage[])=>void
+    setMessages: (ar: ConsoleMessage[]) => void
+    loadHistory: (data: ConsoleMessage[]) => void
 }
 
-declare const agentConsole: AgentConsole
+declare const agentConsole: AgentConsole;

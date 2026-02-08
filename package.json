@@ -96,6 +96,14 @@
         }
       },
       {
+        "command": "my-cat-agent.tasks",
+        "title": "%view.agent.task%",
+        "icon": {
+          "dark": "assets/icons/ic-task-dark.svg",
+          "light": "assets/icons/ic-task.svg"
+        }
+      },
+      {
         "command": "my-cat-agent.clear",
         "title": "%view.agent.clear%",
         "icon": {
@@ -190,6 +198,11 @@
           "submenu": "my-cat.setToken",
           "when": "view == chatView",
           "group": "settings"
+        },
+        {
+          "command": "my-cat-agent.tasks",
+          "when": "view == agentView",
+          "group": "navigation"
         },
         {
           "command": "my-cat-agent.delete",

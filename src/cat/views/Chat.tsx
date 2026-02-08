@@ -282,7 +282,7 @@ export default function () {
         <div ref={chatMessages} class="chat-messages" id="chat-messages">
             <div class="message assistant">
                 {I18nUtils.t('ai.chat.hello')}
-                <div class="message-time">刚刚</div>
+                <div class="message-time">{I18nUtils.t('ai.chat.now')}</div>
             </div>
             <For each={messages()}>
                 {

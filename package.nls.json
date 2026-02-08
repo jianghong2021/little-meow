@@ -16,5 +16,6 @@
     "view.chat.new": "新聊天",
     "view.agent.delete": "清除记录",
     "view.agent.clear": "清除所有记录",
-    "view.agent.open": "打开代理"
+    "view.agent.open": "打开代理",
+    "view.agent.task": "任务"
 }

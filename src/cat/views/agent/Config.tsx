@@ -12,7 +12,7 @@ export default function (props: Props) {
     const { prompt } = props;
     const platforms = window.initConfig.platforms;
     const models = window.initConfig.models;
-    const [config, setConfig] = createSignal(window.initConfig.config);
+    const [config] = createSignal(window.initConfig.config);
     const workspace = window.initConfig.workspace;
 
     const setPlatform = (val: string) => {
@@ -23,7 +23,7 @@ export default function (props: Props) {
     }
 
     const getModels = () => {
-        return models.filter(x => x.platform === config().chatModel.platform)
+        return models.filter(x => x.platform === config().codeModel.platform)
     }
 
     const setModel = (val: string) => {

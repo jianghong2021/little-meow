@@ -256,9 +256,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             const m: GeneralMessage = {
                 role: x.role,
                 content: x.content
-            }
-            return m
-        })
+            };
+            return m;
+        });
         this.model.sseChat(this.config.data.chatModel.name, prompt, activeFile, modalMemory, this.config.data.thinking, data => {
             const answer: ChatDetails = {
                 ...msg,
@@ -283,7 +283,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 type: 'onPutMessage',
                 data: msg
             });
-            console.error(err)
+            console.error(err);
         });
     }
 
@@ -319,7 +319,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     private getWorkspace(){
             const ar = vscode.workspace.workspaceFolders;
             if(!ar){
-                return
+                return;
             }
             const activeFile = vscode.window.activeTextEditor?.document.uri;
             if(activeFile){
@@ -327,7 +327,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 return f?.uri?.fsPath;
             }
             if(ar[0]){
-                return ar[0].uri.fsPath
+                return ar[0].uri.fsPath;
             }
         }
 

@@ -16,5 +16,6 @@
     "view.chat.new": "New Chat",
     "view.agent.delete": "Clear History",
     "view.agent.clear": "Clear All History",
-    "view.agent.open": "Open Agent"
+    "view.agent.open": "Open Agent",
+    "view.agent.task": "Tasks"
 }

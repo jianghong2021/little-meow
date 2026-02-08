@@ -1,12 +1,14 @@
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, Match, onCleanup, onMount, Switch } from "solid-js";
 import { marked } from 'marked';
 import { Console } from "./agent/Console";
 import Config from "./agent/Config";
 import { AgentMsgDbs } from "../../data/AgentMsgDb";
+import Tasks from "./agent/Tasks";
 
 const db = new AgentMsgDbs();
 export default function () {
     const [message, setMessage] = createSignal<AgentMessage>({
+        prompt: '',
         content: "",
         description: '',
         instruction: 'editDocument'
@@ -16,6 +18,9 @@ export default function () {
 
     const [commPrompt, setCommPrompt] = createSignal('');
     const [waiting, setWaiting] = createSignal(false);
+    const [tasks, setTasks] = createSignal<AgentTask[]>([]);
+
+    const [panelMode, setPanelMode] = createSignal<AgentPanelMode>('config')
 
     const sendMessage = (prompt: string) => {
         if (waiting() || prompt.trim() == '') {
@@ -28,8 +33,17 @@ export default function () {
         setWaiting(true);
         vscode.postMessage({
             type: 'sendMessage',
-            data: `${commPrompt()} ,${prompt}`
+            data: {
+                commPrompt: commPrompt(),
+                prompt
+            }
         });
+
+        vscode.postMessage({ type: 'getStatus', data: undefined });
+
+        setTimeout(() => {
+            setWaiting(false);
+        }, 1000 * 3);
     }
 
     const getPlacholder = () => {
@@ -45,6 +59,7 @@ export default function () {
             return
         }
         setMessage({
+            prompt: '',
             content: '',
             description: '',
             instruction: 'editDocument'
@@ -67,8 +82,8 @@ export default function () {
         if (!msg) {
             return
         }
-        setWaiting(false);
         setMessage({
+            prompt: msg.prompt,
             content: msg.content,
             description: await marked.parse(msg.description),
             instruction: msg.instruction,
@@ -78,15 +93,22 @@ export default function () {
             agentConsole.error(msg.error);
         } else {
             agentConsole.info(msg.description);
-            agentConsole.warn(I18nUtils.t('agent.confirm.tips'));
         }
+        setPanelMode('tasks');
     }
 
     const onStatus = (e: AgentStatus) => {
-        if (e.msg) {
-            onServerPutMessage(e.msg);
+        setTasks(e.tasks);
+        setWaiting(false);
+    }
+
+    const taskMode = ()=>{
+        if(panelMode()=='config'){
+            setPanelMode('tasks');
+        }else{
+            setPanelMode('config');
         }
-        setWaiting(e.waiting);
+        
     }
 
     const clearHistory = () => {
@@ -112,6 +134,9 @@ export default function () {
                 break
             case 'onStatus':
                 onStatus(data);
+                break
+            case 'taskMode':
+                taskMode()
                 break
             case 'clearAgent':
                 clearAgent()
@@ -145,13 +170,14 @@ export default function () {
 
     const init = async () => {
         const prompt = await db.getCommPrompt(workspace);
-        setCommPrompt(prompt?.prompt||'');
+        setCommPrompt(prompt?.prompt || '');
 
         const ar = await db.getAll(workspace);
         agentConsole.loadHistory(ar);
     }
 
     onMount(() => {
+        setWaiting(true);
         db.init().then(() => {
             init()
         })
@@ -165,6 +191,13 @@ export default function () {
 
     return <div class="panel-container">
         <Console disabled={waiting} onExecute={onExecute} onInit={onConsoleInit} onInsert={inserMessage} placeholder={getPlacholder()} />
-        <Config answering={waiting} prompt={commPrompt} updateCommPrompt={updateCommPrompt} />
+        <Switch>
+            <Match when={panelMode() == 'config'}>
+                <Config answering={waiting} prompt={commPrompt} updateCommPrompt={updateCommPrompt} />
+            </Match>
+            <Match when={panelMode() == 'tasks'}>
+                <Tasks tasks={tasks()} />
+            </Match>
+        </Switch>
     </div>
 }

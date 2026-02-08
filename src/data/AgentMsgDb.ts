@@ -7,7 +7,7 @@ export class AgentMsgDbs {
     public async init() {
         if (!await tableExists(this.TABLE)) {
             db.version(1).stores({
-                'agent-msg': '&id,workspace,type,source,data,content,date,[workspace+date]'
+                'agent-msg': '&id,workspace,prompt,type,source,data,content,status,date,[workspace+date]'
             });
         }
         if (!await tableExists(this.CONFIG_TABLE)) {
@@ -35,9 +35,9 @@ export class AgentMsgDbs {
     public async setCommPrompt(data: AgentCommPrompt) {
         const old = await this.getCommPrompt(data.workspace);
         if(old){
-            await db.table(this.CONFIG_TABLE).update(old.id,data)
+            await db.table(this.CONFIG_TABLE).update(old.id,data);
         }else{
-            await db.table(this.CONFIG_TABLE).add(data)
+            await db.table(this.CONFIG_TABLE).add(data);
         }
     }
 
@@ -57,17 +57,17 @@ export class AgentMsgDbs {
                 await this.insert(data);
             }
         } catch (err) {
-            console.error(data)
-            console.error(err)
+            console.error(data);
+            console.error(err);
         }
     }
 
     public async insert(data: ConsoleMessage) {
-        await db.table(this.TABLE).add(data)
+        await db.table(this.TABLE).add(data);
     }
 
     public remove(id: string) {
-        return db.table(this.TABLE).delete(id)
+        return db.table(this.TABLE).delete(id);
     }
 
     public async removeAll(workspace: string) {

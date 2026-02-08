@@ -74,6 +74,7 @@ export function Console(props: ConsoleProps) {
             content: text,
             date: Date.now(),
             workspace: workspace,
+            status: 'waiting',
             data
         };
 
@@ -271,9 +272,8 @@ export function Console(props: ConsoleProps) {
 
             {/* 输入区域 */}
             <div class="console-input-area">
-                <input
+                <textarea
                     disabled={props.disabled()}
-                    type="text"
                     class="console-input"
                     value={input()}
                     onInput={(e) => setInput(e.currentTarget.value.trim())}

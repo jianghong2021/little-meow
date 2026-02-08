@@ -46,6 +46,7 @@
     border: 1px solid var(--vscode-input-border);
     border-radius: 2px;
     font-family: var(--vscode-font-family);
+    resize: none;
 }
 
 .console-input:focus {

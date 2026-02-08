@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { AiModel } from './AiModel';
 import { ConfigDa } from '../data/ConfigDb';
 import { I18nUtils } from '../utils/i18n';
-import { AgentMsgDbs } from '../data/AgentMsgDb';
+import { generateUUID } from '../utils/string';
 
 export class AgentViewProvider implements vscode.WebviewViewProvider {
     static VIEW_ID = 'agentView';
@@ -10,9 +10,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     public webview?: vscode.WebviewView;
     public model = new AiModel();
     public config: ConfigDa;
-    private msg?: AgentMessage;
-    private waiting = false;
-    private docUrl?: vscode.Uri;
+    private tasks: AgentTask[] = [];
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
@@ -22,7 +20,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         const provider = new AgentViewProvider(context);
         const disposable = vscode.window.registerWebviewViewProvider(this.VIEW_ID, provider);
         context.subscriptions.push(disposable);
-        console.log('注册小喵喵代理')
+        console.log('注册小喵喵代理');
     }
 
     resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, token: vscode.CancellationToken): Thenable<void> | void {
@@ -47,9 +45,6 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                 case 'getStatus':
                     this.getStatus();
                     break;
-                case 'confirmMessage':
-                    this.confirmMessage(e.data);
-                    break;
                 case 'setModel':
                     this.setModel(e.data);
                     break;
@@ -60,12 +55,14 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         });
 
         //内置命令
+        const tasksAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.tasks', this.tasksAgent.bind(this));
         const clearAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.delete', this.deleteAgent.bind(this));
         const clearAllAgentCommdDispose = vscode.commands.registerCommand('my-cat-agent.clear', this.clearAgent.bind(this));
 
         webviewView.onDidDispose(() => {
             msgDispose.dispose();
             themeDispose.dispose();
+            tasksAgentCommdDispose.dispose();
             clearAgentCommdDispose.dispose();
             clearAllAgentCommdDispose.dispose();
         });
@@ -87,6 +84,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         <link rel="stylesheet" href="${baseUrl}/css/agent.css">
         <link rel="stylesheet" href="${baseUrl}/css/console.css">
         <link rel="stylesheet" href="${baseUrl}/css/agent-config.css">
+        <link rel="stylesheet" href="${baseUrl}/css/agent-tasks.css">
     </head>
     <body>
         <div id="app"></div>
@@ -97,7 +95,6 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                 platforms: ${JSON.stringify(this.config.platforms)},
                 models: ${JSON.stringify(this.config.models)},
                 config: ${JSON.stringify(config)},
-                msg: ${this.msg ? JSON.stringify(this.msg) : undefined},
                 workspace: '${workspace || ''}',
             }
             window.I18nUtils = {
@@ -125,7 +122,7 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
     private getWorkspace() {
         const ar = vscode.workspace.workspaceFolders;
         if (!ar) {
-            return
+            return;
         }
         const activeFile = vscode.window.activeTextEditor?.document.uri;
         if (activeFile) {
@@ -133,8 +130,15 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
             return f?.uri?.fsPath;
         }
         if (ar[0]) {
-            return ar[0].uri.fsPath
+            return ar[0].uri.fsPath;
         }
+    }
+
+    private tasksAgent() {
+        this.webview?.webview?.postMessage({
+            type: 'taskMode',
+            data: undefined
+        });
     }
 
     private deleteAgent() {
@@ -185,108 +189,128 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         this.renderHtml();
     }
 
-    private async sendMessage(prompt: string) {
+    private async sendMessage(arg: AgentMessageRequest) {
         const document = vscode.window.activeTextEditor?.document;
 
-        this.docUrl = document?.uri;
-        this.waiting = true;
         let source = document?.getText();
         await this.model.initConfig(this.context, 'code');
-        if (/(创建|新建|create|new)/i.test(prompt)) {
+        if (/(创建|新建|create|new)/i.test(arg.prompt)) {
             source = '';
         }
-        this.msg = await this.model.agent(prompt, source);
+        const task: AgentTask = {
+            prompt: arg.prompt,
+            docUrl: document?.uri,
+            id: generateUUID(),
+        };
+        this.tasks.push(task);
+        this.getStatus();
+        const prompt = `${arg.commPrompt}, ${arg.prompt}`;
+        task.msg = await this.model.agent(prompt, source);
         this.webview?.webview?.postMessage({
             type: 'onPutMessage',
-            data: this.msg
+            data: task.msg
         });
-        this.waiting = false;
 
         vscode.commands.executeCommand('my-cat-agent.open');
+        this.confirmMessage(task);
     }
 
     private getStatus() {
         const status: AgentStatus = {
-            msg: this.msg,
-            waiting: this.waiting,
-        }
+            tasks: this.tasks,
+        };
         this.webview?.webview?.postMessage({
             type: 'onStatus',
             data: status
         });
     }
 
-    private async confirmMessage(msg: AgentMessage) {
-        if (this.docUrl) {
-            msg.instruction = 'editDocument';
+    private async confirmMessage(task: AgentTask) {
+        if (!task.msg) {
+            return;
         }
-        switch (msg.instruction) {
+        if (task.docUrl) {
+            task.msg.instruction = 'editDocument';
+        }
+        const index = this.tasks.findIndex(x => x.id === task.id);
+        this.tasks.splice(index, 1);
+        this.getStatus();
+        if (task.msg.error) {
+            return;
+        }
+        switch (task.msg.instruction) {
             case 'editDocument':
-                await this.editDocument(msg);
-                break
+                await this.editDocument(task);
+                break;
             case 'createDocument':
-                await this.createDocument(msg);
-                break
+                await this.createDocument(task);
+                break;
         }
-        this.msg = undefined;
+
     }
 
-    private async editDocument(msg: AgentMessage) {
+    private async editDocument(task: AgentTask) {
+        if (!task.msg) {
+            return;
+        }
         const document = vscode.window.activeTextEditor?.document;
-        if (!document || !this.docUrl) {
+        if (!document || !task.docUrl) {
             const msg: AgentMessage = {
+                prompt: '',
                 content: '',
                 description: '',
                 instruction: 'editDocument',
                 error: I18nUtils.t('agent.not_activeDocument')
-            }
+            };
             this.webview?.webview?.postMessage({
                 type: 'onPutMessage',
                 data: msg
             });
-            return
+            return;
         }
-        if (document.uri.fsPath !== this.docUrl?.fsPath) {
+        if (document.uri.fsPath !== task.docUrl?.fsPath) {
             const docs = vscode.workspace.textDocuments;
             let ok = false;
             for (const doc of docs) {
-                if (doc.uri.fsPath === this.docUrl.fsPath) {
+                if (doc.uri.fsPath === task.docUrl.fsPath) {
                     ok = true;
                     await vscode.window.showTextDocument(doc);
-                    break
+                    break;
                 }
             }
 
             if (!ok) {
                 const msg: AgentMessage = {
+                    prompt: '',
                     content: '',
                     description: '',
                     instruction: 'editDocument',
                     error: I18nUtils.t('agent.doc_is_closed')
-                }
+                };
                 this.webview?.webview?.postMessage({
                     type: 'onPutMessage',
                     data: msg
                 });
-                return
+                return;
             }
         }
-
-        this.docUrl = undefined;
         vscode.window.activeTextEditor?.edit(editor => {
             const fullRange = new vscode.Range(
                 document.positionAt(0),
                 document.positionAt(document.getText().length)
             );
-            editor.replace(fullRange, msg.content);
+            editor.replace(fullRange, task.msg!.content);
         });
 
     }
 
-    private async createDocument(msg: AgentMessage) {
+    private async createDocument(task: AgentTask) {
+        if (!task.msg) {
+            return;
+        }
         const doc = await vscode.workspace.openTextDocument({
-            content: msg.content
-        })
+            content: task.msg.content
+        });
         vscode.window.showTextDocument(doc);
     }
 }

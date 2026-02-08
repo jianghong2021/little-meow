@@ -6,6 +6,7 @@
     "ai.chat.hello":"Hello! I am your AI assistant. How can I help you?",
     "ai.chat.input_placeholder":"What do you need me to do?",
     "ai.chat.waiting":"One moment please. ..",
+    "ai.chat.now":"Just now",
     "ai.chat.thinking_cont":"AI thinking",
     "chat.clear.current":"Delete current chat",
     "chat.clear.all":"Delete all chats",
@@ -19,5 +20,6 @@
     "agent.cmd.tips":"Please enter a detailed description of the requirement!",
     "agent.doc_is_closed":"The document to be edited has been closed!",
     "completion.code.generating":"Generating code ...",
-    "agent.code.comm_prompt_placholder":"Setting up common prompt words helps to unify the overall style..."
+    "agent.code.comm_prompt_placholder":"Setting up common prompt words helps to unify the overall style",
+    "agent.task.empty": "No tasks"
 }
