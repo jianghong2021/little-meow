@@ -49,6 +49,21 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'reload':
                     this.renderHtml();
                     break;
+                case 'command':
+                    vscode.commands.executeCommand(e.data);
+                    break;
+                case 'getToken':
+                    this.getToken(e.data);
+                    break;
+                case 'setToken':
+                    this.setToken(e.data);
+                    break;
+                case 'getConversations':
+                    this.getConversations();
+                    break;
+                case 'switchConversation':
+                    this.switchConversation(e.data);
+                    break;
             }
         });
 
@@ -68,6 +83,10 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const clearAllCommdDispose = vscode.commands.registerCommand('my-cat.clearAll', this.clearAllHistory.bind(this));
         const historyCommdDispose = vscode.commands.registerCommand('my-cat.history', this.openHistory.bind(this));
         const newChatCommdDispose = vscode.commands.registerCommand('my-cat.new', this.newChat.bind(this));
+        const settingsCommdDispose = vscode.commands.registerCommand('my-cat.settings', () => {
+            this.webview?.webview?.postMessage({ type: 'showSettings' });
+        });
+
 
         webviewView.onDidDispose(() => {
             msgDispose.dispose();
@@ -77,6 +96,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             editorDispose.dispose();
             newChatCommdDispose.dispose();
             historyCommdDispose.dispose();
+            settingsCommdDispose.dispose();
         });
 
     }
@@ -285,6 +305,34 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             });
             console.error(err);
         });
+    }
+
+    private async setToken(data: { platform: ModePlatform, token: string }) {
+        this.config.setToken(data.token, data.platform);
+        vscode.window.showInformationMessage(I18nUtils.t('chat.config.save_success', 'Token saved successfully'));
+    }
+
+    private async getToken(platform: ModePlatform) {
+        const token = await this.config.getTokenByPlatform(platform);
+        this.webview?.webview?.postMessage({
+            type: 'onToken',
+            data: { platform, token }
+        });
+    }
+
+    private async getConversations() {
+        const db = new ConversationDb(this.context);
+        const data = db.getAll();
+        this.webview?.webview?.postMessage({
+            type: 'onConversations',
+            data: data
+        });
+    }
+
+    private async switchConversation(id: string) {
+        const db = new ConversationDb(this.context);
+        db.setActive(id);
+        this.renderHtml();
     }
 
     private getActiveFile() {

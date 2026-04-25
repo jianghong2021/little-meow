@@ -143,6 +143,7 @@ export default function () {
                 break
             case 'clearHistory':
                 clearHistory();
+                break
         }
     }
 
@@ -156,6 +157,7 @@ export default function () {
                 break
             default:
                 sendMessage(command);
+                break
         }
     }
 
@@ -178,9 +180,7 @@ export default function () {
 
     onMount(() => {
         setWaiting(true);
-        db.init().then(() => {
-            init()
-        })
+        init();
         window.addEventListener('message', onmessage);
         vscode.postMessage({ type: 'getStatus', data: undefined });
     })

@@ -4,18 +4,6 @@ export class AgentMsgDbs {
 
     private TABLE = 'agent-msg';
     private CONFIG_TABLE = 'agent-prompt';
-    public async init() {
-        if (!await tableExists(this.TABLE)) {
-            db.version(1).stores({
-                'agent-msg': '&id,workspace,prompt,type,source,data,content,status,date,[workspace+date]'
-            });
-        }
-        if (!await tableExists(this.CONFIG_TABLE)) {
-            db.version(1).stores({
-                'agent-prompt': '&id,workspace,prompt'
-            });
-        }
-    }
 
     public async getAll(workspace: string,limit = 50) {
         const res: ConsoleMessage[] = await db.table(this.TABLE).where('workspace').equals(workspace).limit(limit).toArray();

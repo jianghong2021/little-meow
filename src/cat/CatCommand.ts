@@ -9,12 +9,6 @@ export class CatCommand {
         });
         context.subscriptions.push(askDespose);
 
-        // 打开设置
-        const settingsDepose = vscode.commands.registerCommand('my-cat.settings', () => {
-            vscode.commands.executeCommand('workbench.action.openSettings', '@my-cat.model-token');
-        });
-        context.subscriptions.push(settingsDepose);
-
         // 打开代理
         const agentDepose = vscode.commands.registerCommand('my-cat-agent.open', () => {
             vscode.commands.executeCommand('workbench.view.extension.my-cat-agent');

@@ -11,20 +11,20 @@ export class ConfigDa {
     public models: ChatModel[] = [
         {
             platform: 'deepseek',
-            name: 'deepseek-chat',
-            label: I18nUtils.t('ai.chat.chat'),
+            name: 'deepseek-v4-flash',
+            label: 'v4-flash',
             ability: 'text'
         },
         {
             platform: 'deepseek',
-            name: 'deepseek-reasoner',
-            label: I18nUtils.t('ai.chat.reasoner'),
+            name: 'deepseek-v4-pro',
+            label: 'v4-pro',
             ability: 'text'
         },
         {
             platform: 'volcengine',
             name: 'doubao-seed-1-6-lite-251015',
-            label: I18nUtils.t('ai.chat.chat'),
+            label: '16-lite',
             ability: 'text'
         },
         {
@@ -134,5 +134,10 @@ export class ConfigDa {
 
     public async getToken(modalType: ChatConfigModeType) {
         return await this.context.secrets.get(this.CacheKey(modalType));
+    }
+
+    public async getTokenByPlatform(platform: ModePlatform) {
+        const id = this.context.extension.id + platform;
+        return await this.context.secrets.get(id);
     }
 }

@@ -185,6 +185,11 @@
           "group": "navigation"
         },
         {
+          "command": "my-cat.settings",
+          "when": "view == chatView",
+          "group": "navigation"
+        },
+        {
           "command": "my-cat.history",
           "when": "view == chatView",
           "group": "chat"

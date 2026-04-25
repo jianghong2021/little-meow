@@ -34,7 +34,7 @@ export class DeepseekModel implements AiCommModel {
         }
         this.lastCheck = now;
         const config = new ConfigDa(context);
-        this.API_TOKEN = (await config.getToken()) || '';
+        this.API_TOKEN = (await config.getToken('chat')) || '';
 
         this.getAccountBalance();
     }
@@ -260,7 +260,8 @@ export class DeepseekModel implements AiCommModel {
         const msg: AgentMessage = {
             content: '',
             description: '',
-            instruction: 'editDocument'
+            instruction: 'editDocument',
+            prompt: ''
         }
         try {
             const text = await this.agentCode(prompt, source);

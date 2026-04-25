@@ -1,10 +1,12 @@
-import { createSignal, For, onCleanup, onMount } from "solid-js";
+import { createSignal, For, Match, onCleanup, onMount, Show, Switch } from "solid-js";
 import { ChatDb } from "../../data/ChatDb";
 import Message from "./chat/Message";
 import InputBox from "./chat/InputBox";
 import { v4 as uuidv4 } from 'uuid';
 import { getFileName } from "../../utils/file";
 import { UiChatDetails } from "./chat-ui";
+import Settings from "./chat/Settings";
+import History from "./chat/History";
 
 const chatDb = new ChatDb();
 
@@ -18,6 +20,7 @@ export default function () {
     })
 
     const workspace = window.initConfig.workspace;
+    const baseUrl = window.initConfig.baseUrl;
 
     const [resend, setResend] = createSignal(false);
 
@@ -27,11 +30,15 @@ export default function () {
     const [config, setConfig] = createSignal(window.initConfig.config);
     const [emotion, setEmotion] = createSignal<PetEmotion>('happy');
 
+    const [activeTab,setActiveTab] = createSignal('chat');
+
     const scrollToBottom = () => {
         if (resend()) {
             return
         }
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     }
 
     const getMemory = (id: string, date: number) => {
@@ -253,16 +260,24 @@ export default function () {
                 break
             case 'clearAllHistory':
                 clearAllHistory()
+                break
             case 'onDocumentChange':
                 onDocumentChange(data)
+                break
+            case 'showSettings':
+                setActiveTab('settings');
+                break
         }
     }
 
-    const init = () => {
-        chatDb.init().then(() => {
-            return chatDb.getAll(conversation().id,workspace)
-        }).then(res => {
+    const switchConversation = (id: string) => {
+        vscode.postMessage({ type: 'switchConversation', data: id });
+        setActiveTab('chat');
+    }
 
+    const init = () => {
+        console.log(conversation())
+        chatDb.getAll(conversation().id, workspace).then(res => {
             setMessages(res.map(x => {
                 return createUiMsg(x)
             }));
@@ -279,17 +294,50 @@ export default function () {
     })
 
     return <div class="chat-container">
-        <div ref={chatMessages} class="chat-messages" id="chat-messages">
-            <div class="message assistant">
-                {I18nUtils.t('ai.chat.hello')}
-                <div class="message-time">{I18nUtils.t('ai.chat.now')}</div>
+        <div class="chat-tabs">
+            <div 
+                class={`tab-item ${activeTab() === 'chat' ? 'active' : ''}`}
+                onClick={() => setActiveTab('chat')}
+            >
+                {I18nUtils.t('chat.tabs.chat', 'Chat')}
             </div>
-            <For each={messages()}>
-                {
-                    (msg, index) => <Message index={index()} msg={msg} chatDb={chatDb} scrollToBottom={scrollToBottom} reSendMessage={reSendMessage} deleteMessage={deleteMessage} />
-                }
-            </For>
+            <div 
+                class={`tab-item ${activeTab() === 'history' ? 'active' : ''}`}
+                onClick={() => setActiveTab('history')}
+            >
+                {I18nUtils.t('chat.tabs.history', 'History')}
+            </div>
+            <div 
+                class={`tab-item ${activeTab() === 'settings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('settings')}
+            >
+                {I18nUtils.t('chat.tabs.settings', 'Settings')}
+            </div>
         </div>
-        <InputBox config={config} setConfig={setConfig} emotion={emotion} setEmotion={setEmotion} answering={answering} activeDocument={activeDocument()} conversation={conversation} sendMessage={sendMessage} />
+
+        <Switch>
+            <Match when={activeTab() === 'chat'}>
+                <div ref={chatMessages} class="chat-messages" id="chat-messages">
+                    <div class="message assistant">
+                        {I18nUtils.t('ai.chat.hello')}
+                        <div class="message-time">{I18nUtils.t('ai.chat.now')}</div>
+                    </div>
+                    <For each={messages()}>
+                        {
+                            (msg, index) => <Message index={index()} msg={msg} chatDb={chatDb} scrollToBottom={scrollToBottom} reSendMessage={reSendMessage} deleteMessage={deleteMessage} />
+                        }
+                    </For>
+                </div>
+                <InputBox config={config} setConfig={setConfig} emotion={emotion} setEmotion={setEmotion} answering={answering} activeDocument={activeDocument()} conversation={conversation} sendMessage={sendMessage} />
+            </Match>
+            <Match when={activeTab() === 'history'}>
+                <History onSelect={switchConversation} />
+            </Match>
+            <Match when={activeTab() === 'settings'}>
+                <Settings
+                    onBack={() => setActiveTab('chat')}
+                />
+            </Match>
+        </Switch>
     </div>
-}
+    }

@@ -1,29 +1,25 @@
 import Dexie from "dexie";
-import { db, tableExists } from ".";
+import { db } from ".";
 
 export class ChatDb {
     private TABLE = 'chats';
-    public async init() {
-        if (await tableExists(this.TABLE)) {
-            return;
-        }
-        db.version(1).stores({
-            'chats': '&id, title,conversationId,workspace, done,content,date,role,fid, [conversationId+date+workspace]'
-        });
-    }
 
     public async getAll(conversationId: string, workspace: string) {
         const res: ChatDetails[] = await db.table(this.TABLE)
-            .where('[conversationId+date]')
+            .where('[conversationId+workspace+date]')
             .between(
-                [conversationId, Dexie.minKey],
-                [conversationId, Dexie.maxKey]
+                [conversationId, workspace, Dexie.minKey],
+                [conversationId, workspace, Dexie.maxKey]
             )
-            .and(x => x.workspace == workspace)
             .reverse()
             .limit(50)
             .toArray();
-        const ar = res.sort((a, b) => a.date - b.date);
+        const ar = res.sort((a, b) => {
+            if (a.date !== b.date) {
+                return a.date - b.date;
+            }
+            return a.id.localeCompare(b.id);
+        });
         return ar;
     }
 

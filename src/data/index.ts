@@ -2,7 +2,13 @@ import Dexie from "dexie";
 
 export const db = new Dexie('my-cat');
 
-db.on('blocked',()=>{
+db.version(2).stores({
+    'chats': '&id, title, conversationId, workspace, done, content, date, role, fid, [conversationId+workspace+date]',
+    'agent-msg': '&id, workspace, prompt, type, source, data, content, status, date, [workspace+date]',
+    'agent-prompt': '&id, workspace, prompt'
+});
+
+db.on('blocked', () => {
     console.log('db blocked')
 })
 
