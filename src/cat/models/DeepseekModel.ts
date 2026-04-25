@@ -12,7 +12,7 @@ export class DeepseekModel implements AiCommModel {
     private API_URL = 'https://api.deepseek.com';
     private API_TOKEN = '';
     private lastCheck = 0;
-    public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
+    public MAX_CONTEXT_SIZE = -1;
 
     public thinking = {
         enabled: {

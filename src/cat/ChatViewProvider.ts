@@ -64,6 +64,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'switchConversation':
                     this.switchConversation(e.data);
                     break;
+                case 'saveModels':
+                    this.saveModels(e.data);
+                    break;
             }
         });
 
@@ -131,7 +134,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const conf = this.config.data;
         conf.chatModel.platform = val as any;
         conf.chatModel.name = this.config.defaultChatModel?.name || 'deepseek-chat';
-        
+
         await this.config.saveConfig({ ...conf });
 
         this.renderHtml();
@@ -255,7 +258,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 activeFile += vscode.window.activeTextEditor.document.getText(range).trim();
 
                 const textEncoder = new TextEncoder();
-                if (textEncoder.encode(activeFile).length >= this.model.MAX_CONTEXT_SIZE) {
+                if (this.model.MAX_CONTEXT_SIZE > -1 && textEncoder.encode(activeFile).length >= this.model.MAX_CONTEXT_SIZE) {
                     break;
                 }
             }
@@ -263,7 +266,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }
 
         // 与模型交互
-        await this.model.initConfig(this.context,'chat');
+        await this.model.initConfig(this.context, 'chat');
         msg.title = prompt.substring(0, 16);
         msg.content = "";
         msg.reasoningContent = '';
@@ -335,6 +338,11 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this.renderHtml();
     }
 
+    private async saveModels(models: ChatModel[]) {
+        await this.config.saveModels(models);
+        this.renderHtml();
+    }
+
     private getActiveFile() {
         if (!vscode.window.activeTextEditor?.document.fileName) {
             return '';
@@ -364,20 +372,20 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         return db.insert(conv);
     }
 
-    private getWorkspace(){
-            const ar = vscode.workspace.workspaceFolders;
-            if(!ar){
-                return;
-            }
-            const activeFile = vscode.window.activeTextEditor?.document.uri;
-            if(activeFile){
-                const f = vscode.workspace.getWorkspaceFolder(activeFile);
-                return f?.uri?.fsPath;
-            }
-            if(ar[0]){
-                return ar[0].uri.fsPath;
-            }
+    private getWorkspace() {
+        const ar = vscode.workspace.workspaceFolders;
+        if (!ar) {
+            return;
         }
+        const activeFile = vscode.window.activeTextEditor?.document.uri;
+        if (activeFile) {
+            const f = vscode.workspace.getWorkspaceFolder(activeFile);
+            return f?.uri?.fsPath;
+        }
+        if (ar[0]) {
+            return ar[0].uri.fsPath;
+        }
+    }
 
     private getHtml(webview: vscode.Webview) {
 
@@ -415,7 +423,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             platforms: ${JSON.stringify(this.config.platforms)},
             models: ${JSON.stringify(this.config.models)},
             config: ${JSON.stringify(config)},
-            workspace: '${workspace||''}',
+            workspace: '${workspace || ''}',
         }
         window.I18nUtils = {
             messages: ${JSON.stringify(I18nUtils.messages)},

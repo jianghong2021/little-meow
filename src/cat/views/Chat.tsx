@@ -7,6 +7,7 @@ import { getFileName } from "../../utils/file";
 import { UiChatDetails } from "./chat-ui";
 import Settings from "./chat/Settings";
 import History from "./chat/History";
+import Models from "./chat/Models";
 
 const chatDb = new ChatDb();
 
@@ -308,6 +309,12 @@ export default function () {
                 {I18nUtils.t('chat.tabs.history', 'History')}
             </div>
             <div 
+                class={`tab-item ${activeTab() === 'models' ? 'active' : ''}`}
+                onClick={() => setActiveTab('models')}
+            >
+                {I18nUtils.t('chat.tabs.models', 'Models')}
+            </div>
+            <div 
                 class={`tab-item ${activeTab() === 'settings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('settings')}
             >
@@ -332,6 +339,9 @@ export default function () {
             </Match>
             <Match when={activeTab() === 'history'}>
                 <History onSelect={switchConversation} />
+            </Match>
+            <Match when={activeTab() === 'models'}>
+                <Models onBack={() => setActiveTab('chat')} />
             </Match>
             <Match when={activeTab() === 'settings'}>
                 <Settings

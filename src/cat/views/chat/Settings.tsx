@@ -45,9 +45,6 @@ export default function (props: {
 
     return (
         <div class="settings-container">
-            <div class="settings-header">
-                <h2>{I18nUtils.t('chat.settings.title', 'Settings')}</h2>
-            </div>
 
             <div class="settings-content">
                 <div class="settings-section">
@@ -59,7 +56,7 @@ export default function (props: {
                                     class={`platform-item ${selectedPlatform() === platform ? 'active' : ''}`}
                                     onClick={() => setSelectedPlatform(platform)}
                                 >
-                                    {platform}
+                                    {I18nUtils.t('chat.settings.'+platform)}
                                 </div>
                             )}
                         </For>

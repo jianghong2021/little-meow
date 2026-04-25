@@ -21,5 +21,27 @@
     "agent.doc_is_closed":"将要编辑的文档已被关闭!",
     "completion.code.generating":"正在生成代码...",
     "agent.code.comm_prompt_placholder":"设置公共提示词,有助于整体风格统一",
-    "agent.task.empty": "没有任务"
+    "agent.task.empty": "没有任务",
+    "chat.tabs.settings": "设置",
+    "chat.tabs.history": "历史",
+    "chat.tabs.chat": "聊天",
+    "chat.tabs.models":"模型",
+    "chat.tabs.delete":"删除",
+    "chat.models.add":"添加",
+    "chat.models.cancel":"取消",
+    "chat.models.list":"模型列表",
+    "chat.models.platform":"平台",
+    "chat.models.name":"名称",
+    "chat.models.label":"标签",
+    "chat.models.ability":"能力",
+    "chat.models.save":"保存",
+    "chat.settings.deepseek":"Deepseek",
+    "chat.settings.volcengine":"火山引擎",
+    "chat.settings.api_token":"接口token",
+    "chat.settings.save":"保存",
+    "chat.settings.token_placeholder":"请输入接口token,在官方控制台获取",
+    "chat.settings.danger_zone":"危险区域",
+    "chat.models.delete_title":"删除提示",
+    "chat.models.delete_confirm":"是否删除此模型?"
+
 }

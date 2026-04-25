@@ -3,12 +3,10 @@ import { I18nUtils } from '../utils/i18n';
 
 export class ConfigDa {
     private CACHE_KEY = 'chat-config';
+    private MODELS_CACHE_KEY = 'chat-models';
     private context: vscode.ExtensionContext;
-    constructor(context: vscode.ExtensionContext) {
-        this.context = context;
-    }
 
-    public models: ChatModel[] = [
+    private defaultModels: ChatModel[] = [
         {
             platform: 'deepseek',
             name: 'deepseek-v4-flash',
@@ -30,7 +28,7 @@ export class ConfigDa {
         {
             platform: 'volcengine',
             name: 'doubao-seed-code-preview-251028',
-            label: I18nUtils.t('ai.chat.code'),
+            label: 'code',
             ability: 'text'
         },
         {
@@ -70,6 +68,22 @@ export class ConfigDa {
             ability: 'text'
         }
     ];
+
+    constructor(context: vscode.ExtensionContext) {
+        this.context = context;
+    }
+
+    public get models(): ChatModel[] {
+        const cache = this.context.globalState.get<ChatModel[]>(this.MODELS_CACHE_KEY);
+        if (cache && cache.length > 0) {
+            return cache;
+        }
+        return this.defaultModels;
+    }
+
+    public async saveModels(models: ChatModel[]) {
+        await this.context.globalState.update(this.MODELS_CACHE_KEY, models);
+    }
 
     public platforms: ModePlatform[] = [
         'deepseek',
