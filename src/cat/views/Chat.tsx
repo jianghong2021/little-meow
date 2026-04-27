@@ -228,9 +228,12 @@ export default function () {
             return
         }
         msg.setStatus('waiting');
-        chatDb.deleteMessage(msg.id, msg.fid).then(() => {
+        const relatedId = msg.role === 'user'
+            ? messages().find(x => x.fid === msg.id)?.id
+            : undefined;
+        chatDb.deleteMessage(msg.id, msg.fid || relatedId).then(() => {
             setMessages(prev => {
-                return prev.filter(x => x.id != msg.id && x.id !== msg.fid)
+                return prev.filter(x => x.id !== msg.id && x.id !== msg.fid && x.id !== relatedId)
             })
         }).catch(() => {
             msg.setStatus('ended');

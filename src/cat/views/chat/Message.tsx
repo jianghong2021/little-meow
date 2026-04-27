@@ -96,9 +96,11 @@ export default function ({ index,msg,deleteMessage, scrollToBottom, reSendMessag
         </Show>
         <Show when={msg.status() === 'ended'}>
             <div class="message-footer" style="display:${msg.status === 'ended' ? 'flex' : 'none'}">
-                <div class="btn-icon" style={{ display: msg.role == 'assistant' ? 'flex' : 'none' }}>
+                <div class="btn-icon">
                     <img src={copyIcon} onclick={(e) => copyMsgContent(e.target as any, msg.id)} />
-                    <img src={refreshIcon} onclick={() => reSendMessage(msg.id, msg.fid)} />
+                    <Show when={msg.role === 'assistant'}>
+                        <img src={refreshIcon} onclick={() => reSendMessage(msg.id, msg.fid)} />
+                    </Show>
                     <img src={deleIcon} onclick={() => deleteMessage(index)} />
                 </div>
                 <span class="message-time" title={formatTimestamp(msg.date)}>{formatTimeAgo(msg.date)}</span>
