@@ -1,20 +1,32 @@
 import * as vscode from 'vscode';
-import { db, tableExists } from '.';
 
 export class ConversationDb {
     private CACHE_KEY = 'chat-conversations';
     private context: vscode.ExtensionContext;
-    constructor(context: vscode.ExtensionContext) {
+    private workspace: string;
+
+    constructor(context: vscode.ExtensionContext, workspace?: string) {
         this.context = context;
+        this.workspace = workspace || '';
+    }
+
+    private rawGetAll(): ConversationDetails[] {
+        return this.context.globalState.get(this.CACHE_KEY) || [];
+    }
+
+    private isCurrentWorkspace(conv: ConversationDetails): boolean {
+        return (conv.workspace || '') === this.workspace;
     }
 
     public getAll() {
-        const res: ConversationDetails[] = this.context.globalState.get(this.CACHE_KEY) || [];
-        return res.sort((a, b) => b.date - a.date);
+        const all = this.rawGetAll();
+        return all
+            .filter(x => this.isCurrentWorkspace(x))
+            .sort((a, b) => b.date - a.date);
     }
 
     public one(id: string) {
-        return this.getAll().find(x => x.id === id);
+        return this.rawGetAll().find(x => x.id === id);
     }
 
     public latestOrSelected() {
@@ -34,7 +46,7 @@ export class ConversationDb {
     }
 
     public update(id: string, data: ConversationDetails) {
-        const ar = this.getAll();
+        const ar = this.rawGetAll();
         for (let i = 0; i < ar.length; i++) {
             if (ar[i].id === id) {
                 ar[i] = { ...data };
@@ -46,12 +58,10 @@ export class ConversationDb {
     }
 
     public setActive(id: string) {
-        const ar = this.getAll();
+        const ar = this.rawGetAll();
         for (let i = 0; i < ar.length; i++) {
-            if (ar[i].id === id) {
-                ar[i].selected = true;
-            } else {
-                ar[i].selected = false;
+            if (this.isCurrentWorkspace(ar[i])) {
+                ar[i].selected = ar[i].id === id;
             }
         }
         this.context.globalState.update(this.CACHE_KEY, ar);
@@ -84,10 +94,16 @@ export class ConversationDb {
             title: 'New Conversation',
             selected: true,
             date: Date.now(),
-            mode: 'code'
+            mode: 'code',
+            workspace: this.workspace
         };
         data.id = this.createID();
-        const ar = this.getAll();
+        const ar = this.rawGetAll();
+        for (const item of ar) {
+            if (this.isCurrentWorkspace(item)) {
+                item.selected = false;
+            }
+        }
         ar.push(data);
         this.context.globalState.update(this.CACHE_KEY, ar);
         return data;
@@ -95,19 +111,26 @@ export class ConversationDb {
 
     public insert(data: ConversationDetails) {
         data.id = this.createID();
-        const ar = this.getAll();
+        data.workspace = this.workspace;
+        const ar = this.rawGetAll();
+        for (const item of ar) {
+            if (this.isCurrentWorkspace(item)) {
+                item.selected = false;
+            }
+        }
         ar.push(data);
         this.context.globalState.update(this.CACHE_KEY, ar);
         return data;
     }
 
     public remove(id: string) {
-        const ar = this.getAll().filter(x => x.id !== id);
+        const ar = this.rawGetAll().filter(x => x.id !== id);
         this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
     public removeAll() {
-        this.context.globalState.update(this.CACHE_KEY, []);
+        const ar = this.rawGetAll().filter(x => !this.isCurrentWorkspace(x));
+        this.context.globalState.update(this.CACHE_KEY, ar);
     }
 
     public clear() {

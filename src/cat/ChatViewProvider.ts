@@ -105,7 +105,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private setChatMode() {
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         const conv = this.getConversation();
         if (conv.mode !== 'code') {
             conv.mode = 'code';
@@ -158,7 +158,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }, I18nUtils.t('chat.clear.yes'));
         if (res !== undefined) {
             //删除当前聊天
-            const db = new ConversationDb(this.context);
+            const db = new ConversationDb(this.context, this.getWorkspace());
             const conv = this.getConversation();
             db.remove(conv.id);
             this.webview?.webview?.postMessage({
@@ -174,7 +174,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         }, I18nUtils.t('chat.clear.yes'));
         if (res !== undefined) {
             //删除全部聊天
-            const db = new ConversationDb(this.context);
+            const db = new ConversationDb(this.context, this.getWorkspace());
             db.removeAll();
             this.webview?.webview?.postMessage({
                 type: 'clearAllHistory',
@@ -184,7 +184,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private openHistory() {
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         const quickPick = vscode.window.createQuickPick();
 
         const data = db.getAll();
@@ -222,7 +222,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private newChat() {
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         db.new();
         this.renderHtml();
         console.log('new chat');
@@ -236,7 +236,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             status: 'waiting'
         };
 
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         const conv = db.one(msg.conversationId);
         if (!conv) {
             msg.content = '会话不存在!';
@@ -324,7 +324,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async getConversations() {
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         const data = db.getAll();
         this.webview?.webview?.postMessage({
             type: 'onConversations',
@@ -333,7 +333,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private async switchConversation(id: string) {
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         db.setActive(id);
         this.renderHtml();
     }
@@ -356,7 +356,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     }
 
     private getConversation() {
-        const db = new ConversationDb(this.context);
+        const db = new ConversationDb(this.context, this.getWorkspace());
         const res = db.latestOrSelected();
         if (res) {
             return res;

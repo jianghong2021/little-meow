@@ -4,4 +4,5 @@ interface ConversationDetails  {
     date: number
     selected: boolean
     mode: ChatConfigMode
+    workspace?: string
 }
