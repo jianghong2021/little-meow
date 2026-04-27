@@ -42,5 +42,7 @@
     "chat.settings.token_placeholder":"Please enter the interface token, which can be obtained from the official control panel",
     "chat.settings.danger_zone":"Danger Zone",
     "chat.models.delete_title":"Delete",
-    "chat.models.delete_confirm":"Are you sure you want to delete it?"
+    "chat.models.delete_confirm":"Are you sure you want to delete it?",
+    "chat.settings.openai":"OpenAI Compatible",
+    "chat.settings.base_url_placeholder":"Enter Base URL, e.g. https://api.openai.com/v1"
 }

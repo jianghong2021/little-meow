@@ -4,6 +4,7 @@ import { DeepseekModel } from './models/DeepseekModel';
 import { ClaudeModel } from './models/ClaudeModel';
 import { ChatGptModel } from './models/ChatGptModel';
 import { DoubaoModel } from './models/DoubaoModel';
+import { OpenAiModel } from './models/OpenAiModel';
 
 export class AiModel implements AiCommModel {
     private API_TOKEN = '';
@@ -25,6 +26,9 @@ export class AiModel implements AiCommModel {
                 this.model = new ChatGptModel(this.API_TOKEN) as any;
             } else if (config.data.chatModel.platform === 'volcengine') {
                 this.model = new DoubaoModel(this.API_TOKEN) as any;
+            } else if (config.data.chatModel.platform === 'openai') {
+                const baseUrl = config.data.platformBaseUrls?.['openai'] || '';
+                this.model = new OpenAiModel(this.API_TOKEN, baseUrl) as any;
             }
         }else{
             if (config.data.codeModel.platform === 'deepseek') {
@@ -35,6 +39,9 @@ export class AiModel implements AiCommModel {
                 this.model = new ChatGptModel(this.API_TOKEN) as any;
             } else if (config.data.codeModel.platform === 'volcengine') {
                 this.model = new DoubaoModel(this.API_TOKEN) as any;
+            } else if (config.data.codeModel.platform === 'openai') {
+                const baseUrl = config.data.platformBaseUrls?.['openai'] || '';
+                this.model = new OpenAiModel(this.API_TOKEN, baseUrl) as any;
             }
         }
 

@@ -67,6 +67,9 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'saveModels':
                     this.saveModels(e.data);
                     break;
+                case 'setBaseUrl':
+                    this.setBaseUrl(e.data);
+                    break;
             }
         });
 
@@ -315,6 +318,12 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         vscode.window.showInformationMessage(I18nUtils.t('chat.config.save_success', 'Token saved successfully'));
     }
 
+    private async setBaseUrl(data: { platform: ModePlatform, url: string }) {
+        await this.config.setBaseUrl(data.platform, data.url);
+        this.renderHtml();
+        vscode.window.showInformationMessage(I18nUtils.t('chat.config.save_success', 'Saved successfully'));
+    }
+
     private async getToken(platform: ModePlatform) {
         const token = await this.config.getTokenByPlatform(platform);
         this.webview?.webview?.postMessage({
@@ -402,6 +411,14 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         const workspace = this.getWorkspace();
 
+        const baseUrls: Record<string, string> = {};
+        for (const p of this.config.platforms) {
+            const url = this.config.getBaseUrl(p);
+            if (url) {
+                baseUrls[p] = url;
+            }
+        }
+
         return `
         <!DOCTYPE html>
 <html lang="zh-CN">
@@ -424,6 +441,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             models: ${JSON.stringify(this.config.models)},
             config: ${JSON.stringify(config)},
             workspace: '${workspace || ''}',
+            baseUrls: ${JSON.stringify(baseUrls)},
         }
         window.I18nUtils = {
             messages: ${JSON.stringify(I18nUtils.messages)},

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, onMount } from "solid-js";
+import { createEffect, createSignal, For, onMount, Show } from "solid-js";
 
 export default function (props: {
     onBack: () => void,
@@ -6,11 +6,13 @@ export default function (props: {
     const [platforms] = createSignal<ModePlatform[]>(window.initConfig.platforms);
     const [selectedPlatform, setSelectedPlatform] = createSignal<ModePlatform>(platforms()[0]);
     const [token, setToken] = createSignal("");
-    const baseUrl = window.initConfig.baseUrl;
+    const [baseUrl, setBaseUrl] = createSignal("");
+    const initBaseUrls: Record<string, string> = window.initConfig.baseUrls || {};
 
     onMount(() => {
         window.addEventListener('message', onMessage);
         requestToken(selectedPlatform());
+        setBaseUrl(initBaseUrls[selectedPlatform()] || '');
     });
 
     const onMessage = (e: MessageEvent) => {
@@ -31,6 +33,13 @@ export default function (props: {
         });
     };
 
+    const saveBaseUrl = () => {
+        vscode.postMessage({
+            type: 'setBaseUrl',
+            data: { platform: selectedPlatform(), url: baseUrl() }
+        });
+    };
+
     const clearHistory = () => {
         vscode.postMessage({ type: 'command', data: 'my-cat.clear' });
     };
@@ -41,6 +50,7 @@ export default function (props: {
 
     createEffect(() => {
         requestToken(selectedPlatform());
+        setBaseUrl(initBaseUrls[selectedPlatform()] || '');
     });
 
     return (
@@ -72,6 +82,19 @@ export default function (props: {
                             {I18nUtils.t('chat.settings.save', 'Save')}
                         </button>
                     </div>
+                    <Show when={selectedPlatform() === 'openai'}>
+                        <div class="token-input-group" style={{ "margin-top": "8px" }}>
+                            <input
+                                type="text"
+                                value={baseUrl()}
+                                onInput={(e) => setBaseUrl(e.currentTarget.value)}
+                                placeholder={I18nUtils.t('chat.settings.base_url_placeholder', 'Enter Base URL, e.g. https://api.openai.com/v1')}
+                            />
+                            <button class="save-button" onClick={saveBaseUrl}>
+                                {I18nUtils.t('chat.settings.save', 'Save')}
+                            </button>
+                        </div>
+                    </Show>
                 </div>
 
                 <div class="settings-section">

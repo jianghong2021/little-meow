@@ -7,6 +7,7 @@
     "settings.model.token":"Model API Token",
     "settings.model.deepseek":"Deepseek",
     "settings.model.volcengine":"Volcengine",
+    "settings.model.openai":"OpenAI Compatible",
     "view.chat.clear": "Delete Chat",
     "view.chat.clearCurrent": "Delete current",
     "view.chat.clearAll": "Delete all",

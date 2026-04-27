@@ -7,6 +7,7 @@
     "settings.model.token":"API令牌token",
     "settings.model.deepseek":"Deepseek",
     "settings.model.volcengine":"Volcengine",
+    "settings.model.openai":"OpenAI Compatible",
     "view.chat.clear": "删除聊天",
     "view.chat.clearCurrent": "删除当前聊天",
     "view.chat.clearAll": "删除全部聊天",

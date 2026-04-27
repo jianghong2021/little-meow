@@ -42,6 +42,8 @@
     "chat.settings.token_placeholder":"请输入接口token,在官方控制台获取",
     "chat.settings.danger_zone":"危险区域",
     "chat.models.delete_title":"删除提示",
-    "chat.models.delete_confirm":"是否删除此模型?"
+    "chat.models.delete_confirm":"是否删除此模型?",
+    "chat.settings.openai":"OpenAI兼容",
+    "chat.settings.base_url_placeholder":"请输入Base URL, 如 https://api.openai.com/v1"
 
 }

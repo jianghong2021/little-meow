@@ -66,6 +66,12 @@ export class ConfigDa {
             name: 'deepseek-v3-2-251201',
             label: 'dsv3',
             ability: 'text'
+        },
+        {
+            platform: 'openai',
+            name: 'gpt-4o-mini',
+            label: 'gpt-4o-mini',
+            ability: 'text'
         }
     ];
 
@@ -87,7 +93,8 @@ export class ConfigDa {
 
     public platforms: ModePlatform[] = [
         'deepseek',
-        'volcengine'
+        'volcengine',
+        'openai'
     ];
 
     public get defaultChatModel() {
@@ -153,5 +160,18 @@ export class ConfigDa {
     public async getTokenByPlatform(platform: ModePlatform) {
         const id = this.context.extension.id + platform;
         return await this.context.secrets.get(id);
+    }
+
+    public getBaseUrl(platform: ModePlatform): string {
+        return this.data.platformBaseUrls?.[platform] || '';
+    }
+
+    public async setBaseUrl(platform: ModePlatform, url: string) {
+        const conf = { ...this.data };
+        if (!conf.platformBaseUrls) {
+            conf.platformBaseUrls = {};
+        }
+        conf.platformBaseUrls[platform] = url;
+        await this.saveConfig(conf);
     }
 }
