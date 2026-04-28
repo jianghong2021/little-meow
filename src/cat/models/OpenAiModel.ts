@@ -1,3 +1,5 @@
+import { getAgentTools, parseAgentToolResponse } from './AgentTools';
+
 export class OpenAiModel implements AiCommModel {
     private API_URL = '';
     private API_TOKEN = '';
@@ -118,13 +120,21 @@ export class OpenAiModel implements AiCommModel {
         return data.choices[0].message.content;
     }
 
-    private async agentCode(prompt: string, source?: string): Promise<string> {
+    private async agentCode(prompt: string, source?: string): Promise<any> {
         if (!this.API_TOKEN) {
             throw Error('请先配置API Token');
         }
         if (!this.API_URL) {
             throw Error('请先在设置中配置Base URL');
         }
+        const messages: any[] = [
+            { role: 'system', content: '你是小喵喵,一只编程大师卡通猫咪,负责代码的编辑和创建任务' }
+        ];
+        if (source) {
+            messages.push({ role: 'system', content: `当前源码:\n\`\`\`\n${source}\n\`\`\`` });
+        }
+        messages.push({ role: 'user', content: prompt });
+
         const res = await fetch(`${this.API_URL}/chat/completions`, {
             method: 'POST',
             headers: {
@@ -132,37 +142,16 @@ export class OpenAiModel implements AiCommModel {
                 'Authorization': 'Bearer ' + this.API_TOKEN
             },
             body: JSON.stringify({
-                "model": this.defaultModel,
-                "temperature": 0.0,
-                "max_tokens": 8192,
-                "messages": [
-                    { "role": "system", "content": '你仅负责代码生成，以纯源码格式返回，不要markdown' },
-                    { "role": "system", "content": `源码: \n ${source}` },
-                    {
-                        "role": "system", "content": `
-                    按照要求改动用户源码(若无源码,则按照要求生成全新源码),将新的源码放于字段"content",改动说明或源码简要放于字段"compare",
-                    "description"说明尽量简洁表达.
-                    "instruction"根据用户提示词设置,是创建还是编辑.可选值: 'editDocument'|'createDocument'
-                    输出示例json:
-                    {
-                        "content":"const a=1;",
-                        "description": "改动了函数xx,重新优化此函数",
-                        "instruction": "editDocument"
-                    }
-                    ` },
-                    { "role": "user", "content": prompt }
-                ],
-                "stream": false
+                model: this.defaultModel,
+                temperature: 0.0,
+                max_tokens: 16384,
+                messages,
+                tools: getAgentTools(),
+                tool_choice: 'required',
+                stream: false
             })
         });
-        const data: any = await res.json();
-        if (data['error']) {
-            throw Error(data['error']['message'] || 'unknown error');
-        }
-        if (!data.choices[0]) {
-            throw Error('生成失败，请稍后重试');
-        }
-        return data.choices[0].message.content;
+        return await res.json();
     }
 
     public async getAccountBalance() {
@@ -220,18 +209,27 @@ export class OpenAiModel implements AiCommModel {
     }
 
     async agent(prompt: string, source?: string) {
-        const msg: AgentMessage = {
-            content: '',
-            description: '',
-            instruction: 'editDocument',
-            prompt: ''
-        };
         try {
-            const text = await this.agentCode(prompt, source);
-            const code = text.replaceAll(/\`{3}(\w+)?/g, '');
-            return JSON.parse(code);
+            const data = await this.agentCode(prompt, source);
+            if (data.error) {
+                const msg: AgentMessage = {
+                    content: '',
+                    description: '',
+                    instruction: 'editDocument',
+                    prompt: '',
+                    error: data.error.message || 'unknown error'
+                };
+                return msg;
+            }
+            return parseAgentToolResponse(data);
         } catch (err: any) {
-            msg.error = err.message || '解析失败';
+            const msg: AgentMessage = {
+                content: '',
+                description: '',
+                instruction: 'editDocument',
+                prompt: '',
+                error: err.message || '解析失败'
+            };
             return msg;
         }
     }

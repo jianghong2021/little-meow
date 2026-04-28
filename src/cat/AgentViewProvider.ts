@@ -231,9 +231,6 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
         if (!task.msg) {
             return;
         }
-        if (task.docUrl) {
-            task.msg.instruction = 'editDocument';
-        }
         const index = this.tasks.findIndex(x => x.id === task.id);
         this.tasks.splice(index, 1);
         this.getStatus();
