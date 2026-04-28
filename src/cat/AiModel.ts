@@ -12,39 +12,44 @@ export class AiModel implements AiCommModel {
     public model?: AiCommModel;
     private lastGetAccount = 0;
 
+    private getModelForPlatform(config: ConfigDa, platform: ModePlatform, modelName: string): AiCommModel {
+        if (platform === 'deepseek') {
+            return new DeepseekModel(this.API_TOKEN) as any;
+        }
+        if (platform === 'claude') {
+            return new ClaudeModel(this.API_TOKEN) as any;
+        }
+        if (platform === 'gpt') {
+            return new ChatGptModel(this.API_TOKEN) as any;
+        }
+        if (platform === 'volcengine') {
+            return new DoubaoModel(this.API_TOKEN) as any;
+        }
+        if (platform === 'openai') {
+            const baseUrl = config.getBaseUrl('openai');
+            return new OpenAiModel(this.API_TOKEN, baseUrl, modelName) as any;
+        }
+        const provider = config.getProviderByPlatform(platform);
+        if (provider) {
+            return new OpenAiModel(this.API_TOKEN, provider.baseUrl, modelName) as any;
+        }
+        throw Error(`Unknown platform: ${platform}`);
+    }
+
     /**初始化模型 */
     public async initConfig(context: vscode.ExtensionContext, modalType: ChatConfigModeType) {
         const config = new ConfigDa(context);
         this.API_TOKEN = (await config.getToken(modalType)) || '';
 
-        if (modalType === 'chat') {
-            if (config.data.chatModel.platform === 'deepseek') {
-                this.model = new DeepseekModel(this.API_TOKEN) as any;
-            } else if (config.data.chatModel.platform === 'claude') {
-                this.model = new ClaudeModel(this.API_TOKEN) as any;
-            } else if (config.data.chatModel.platform === 'gpt') {
-                this.model = new ChatGptModel(this.API_TOKEN) as any;
-            } else if (config.data.chatModel.platform === 'volcengine') {
-                this.model = new DoubaoModel(this.API_TOKEN) as any;
-            } else if (config.data.chatModel.platform === 'openai') {
-                const baseUrl = config.data.platformBaseUrls?.['openai'] || '';
-                this.model = new OpenAiModel(this.API_TOKEN, baseUrl) as any;
-            }
-        }else{
-            if (config.data.codeModel.platform === 'deepseek') {
-                this.model = new DeepseekModel(this.API_TOKEN) as any;
-            } else if (config.data.codeModel.platform === 'claude') {
-                this.model = new ClaudeModel(this.API_TOKEN) as any;
-            } else if (config.data.codeModel.platform === 'gpt') {
-                this.model = new ChatGptModel(this.API_TOKEN) as any;
-            } else if (config.data.codeModel.platform === 'volcengine') {
-                this.model = new DoubaoModel(this.API_TOKEN) as any;
-            } else if (config.data.codeModel.platform === 'openai') {
-                const baseUrl = config.data.platformBaseUrls?.['openai'] || '';
-                this.model = new OpenAiModel(this.API_TOKEN, baseUrl) as any;
-            }
-        }
+        const platform = modalType === 'chat'
+            ? config.data.chatModel.platform
+            : config.data.codeModel.platform;
 
+        const modelName = modalType === 'chat'
+            ? config.data.chatModel.name
+            : config.data.codeModel.name;
+
+        this.model = this.getModelForPlatform(config, platform, modelName);
 
         this.MAX_CONTEXT_SIZE = this.model?.MAX_CONTEXT_SIZE || 0;
 

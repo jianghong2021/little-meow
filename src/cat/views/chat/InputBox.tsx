@@ -21,6 +21,12 @@ export default function (props: Props) {
 
     const platforms = window.initConfig.platforms;
     const models = window.initConfig.models;
+    const customProviders: CustomProvider[] = window.initConfig.customProviders || [];
+
+    const getPlatformDisplay = (platform: string) => {
+        const provider = customProviders.find(p => p.id === platform);
+        return provider ? provider.name : platform;
+    };
 
     const [inputText, setInputText] = createSignal('');
 
@@ -139,7 +145,7 @@ export default function (props: Props) {
                     <For each={platforms}>
                         {
                             x => <option value={x} selected={x === props.config().chatModel.platform}>
-                                {x}
+                                {getPlatformDisplay(x)}
                             </option>
                         }
                     </For>

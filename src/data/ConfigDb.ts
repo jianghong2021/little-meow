@@ -4,7 +4,13 @@ import { I18nUtils } from '../utils/i18n';
 export class ConfigDa {
     private CACHE_KEY = 'chat-config';
     private MODELS_CACHE_KEY = 'chat-models';
+    private PROVIDERS_CACHE_KEY = 'custom-providers';
     private context: vscode.ExtensionContext;
+
+    private BUILTIN_PLATFORMS: ModePlatform[] = [
+        'deepseek',
+        'volcengine'
+    ];
 
     private defaultModels: ChatModel[] = [
         {
@@ -66,12 +72,6 @@ export class ConfigDa {
             name: 'deepseek-v3-2-251201',
             label: 'dsv3',
             ability: 'text'
-        },
-        {
-            platform: 'openai',
-            name: 'gpt-4o-mini',
-            label: 'gpt-4o-mini',
-            ability: 'text'
         }
     ];
 
@@ -91,11 +91,27 @@ export class ConfigDa {
         await this.context.globalState.update(this.MODELS_CACHE_KEY, models);
     }
 
-    public platforms: ModePlatform[] = [
-        'deepseek',
-        'volcengine',
-        'openai'
-    ];
+    public get customProviders(): CustomProvider[] {
+        const cache = this.context.globalState.get<CustomProvider[]>(this.PROVIDERS_CACHE_KEY);
+        return cache || [];
+    }
+
+    public async saveCustomProviders(providers: CustomProvider[]) {
+        await this.context.globalState.update(this.PROVIDERS_CACHE_KEY, providers);
+    }
+
+    public get platforms(): ModePlatform[] {
+        const custom = this.customProviders.map(p => p.id);
+        return [...this.BUILTIN_PLATFORMS, ...custom];
+    }
+
+    public getProviderByPlatform(platform: ModePlatform): CustomProvider | undefined {
+        return this.customProviders.find(p => p.id === platform);
+    }
+
+    public isBuiltinPlatform(platform: ModePlatform): boolean {
+        return this.BUILTIN_PLATFORMS.includes(platform);
+    }
 
     public get defaultChatModel() {
         const model = this.models.find(x => {
@@ -114,6 +130,23 @@ export class ConfigDa {
     public get data() {
         const cache = this.context.globalState.get(this.CACHE_KEY) as ChatConfig;
         if (cache != undefined && cache.chatModel && cache.codeModel) {
+            const validPlatforms = this.platforms;
+            if (!validPlatforms.includes(cache.chatModel.platform)) {
+                cache.chatModel = {
+                    platform: 'deepseek',
+                    name: this.defaultModels[0].name,
+                    label: this.defaultModels[0].label,
+                    ability: 'text'
+                };
+            }
+            if (!validPlatforms.includes(cache.codeModel.platform)) {
+                cache.codeModel = {
+                    platform: 'deepseek',
+                    name: this.defaultModels[0].name,
+                    label: this.defaultModels[0].label,
+                    ability: 'text'
+                };
+            }
             return cache;
         }
         const conf: ChatConfig = {
@@ -148,7 +181,7 @@ export class ConfigDa {
         }
     }
 
-    public setToken(token: string,platform: ModePlatform) {
+    public setToken(token: string, platform: ModePlatform) {
         const id = this.context.extension.id + platform;
         this.context.secrets.store(id, token);
     }
@@ -163,7 +196,15 @@ export class ConfigDa {
     }
 
     public getBaseUrl(platform: ModePlatform): string {
-        return this.data.platformBaseUrls?.[platform] || '';
+        const conf = this.data;
+        if (conf.platformBaseUrls?.[platform]) {
+            return conf.platformBaseUrls[platform];
+        }
+        const provider = this.getProviderByPlatform(platform);
+        if (provider) {
+            return provider.baseUrl;
+        }
+        return '';
     }
 
     public async setBaseUrl(platform: ModePlatform, url: string) {

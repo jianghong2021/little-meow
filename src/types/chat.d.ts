@@ -32,6 +32,8 @@ interface InitConfig {
     config: ChatConfig
     platforms: ModePlatform[]
     workspace: string
+    customProviders: CustomProvider[]
+    baseUrls: Record<string, string>
 }
 
 interface Window {

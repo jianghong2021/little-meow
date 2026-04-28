@@ -8,7 +8,13 @@ type DoubaoModels = 'doubao-seed-1-8-251215'|'doubao-seed-code-preview-251028'|'
 type OpenAiModels = string;
 
 type ModeAbility = 'text' | 'image' | 'video';
-type ModePlatform = 'deepseek' | 'claude' | 'gpt' | 'volcengine' | 'openai';
+type ModePlatform = string;
+
+type CustomProvider = {
+    id: string
+    name: string
+    baseUrl: string
+}
 
 type ChatModel = {
     platform: ModePlatform
@@ -26,4 +32,5 @@ interface ChatConfig {
     chatModel: ChatModel
     codeModel: ChatModel
     platformBaseUrls?: Record<string, string>
+    customProviders?: CustomProvider[]
 }

@@ -186,21 +186,6 @@
           "group": "navigation"
         },
         {
-          "command": "my-cat.history",
-          "when": "view == chatView",
-          "group": "chat"
-        },
-        {
-          "submenu": "my-cat.clear",
-          "when": "view == chatView",
-          "group": "chat"
-        },
-        {
-          "submenu": "my-cat.setToken",
-          "when": "view == chatView",
-          "group": "settings"
-        },
-        {
           "command": "my-cat-agent.tasks",
           "when": "view == agentView",
           "group": "navigation"
@@ -214,22 +199,6 @@
           "command": "my-cat-agent.clear",
           "when": "view == agentView",
           "group": "navigation"
-        }
-      ],
-      "my-cat.setToken": [
-        {
-          "command": "my-cat.setToken.deepseek"
-        },
-        {
-          "command": "my-cat.setToken.volcengine"
-        }
-      ],
-      "my-cat.clear":[
-        {
-          "command": "my-cat.clear"
-        },
-        {
-          "command": "my-cat.clearAll"
         }
       ]
     },

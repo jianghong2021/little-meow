@@ -70,6 +70,15 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                 case 'setBaseUrl':
                     this.setBaseUrl(e.data);
                     break;
+                case 'addCustomProvider':
+                    this.addCustomProvider(e.data);
+                    break;
+                case 'deleteCustomProvider':
+                    this.deleteCustomProvider(e.data);
+                    break;
+                case 'updateCustomProvider':
+                    this.updateCustomProvider(e.data);
+                    break;
             }
         });
 
@@ -352,6 +361,33 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         this.renderHtml();
     }
 
+    private async addCustomProvider(provider: CustomProvider) {
+        const providers = [...this.config.customProviders];
+        if (providers.find(p => p.id === provider.id)) {
+            vscode.window.showErrorMessage(I18nUtils.t('chat.settings.provider_exists', 'Provider ID already exists'));
+            return;
+        }
+        providers.push(provider);
+        await this.config.saveCustomProviders(providers);
+        this.renderHtml();
+        vscode.window.showInformationMessage(I18nUtils.t('chat.config.save_success', 'Saved successfully'));
+    }
+
+    private async deleteCustomProvider(id: string) {
+        const providers = this.config.customProviders.filter(p => p.id !== id);
+        await this.config.saveCustomProviders(providers);
+        this.renderHtml();
+    }
+
+    private async updateCustomProvider(provider: CustomProvider) {
+        const providers = this.config.customProviders.map(p =>
+            p.id === provider.id ? provider : p
+        );
+        await this.config.saveCustomProviders(providers);
+        this.renderHtml();
+        vscode.window.showInformationMessage(I18nUtils.t('chat.config.save_success', 'Saved successfully'));
+    }
+
     private getActiveFile() {
         if (!vscode.window.activeTextEditor?.document.fileName) {
             return '';
@@ -442,6 +478,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
             config: ${JSON.stringify(config)},
             workspace: '${workspace || ''}',
             baseUrls: ${JSON.stringify(baseUrls)},
+            customProviders: ${JSON.stringify(this.config.customProviders)},
         }
         window.I18nUtils = {
             messages: ${JSON.stringify(I18nUtils.messages)},

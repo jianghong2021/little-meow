@@ -12,8 +12,14 @@ export default function (props: Props) {
     const { prompt } = props;
     const platforms = window.initConfig.platforms;
     const models = window.initConfig.models;
+    const customProviders: CustomProvider[] = window.initConfig.customProviders || [];
     const [config] = createSignal(window.initConfig.config);
     const workspace = window.initConfig.workspace;
+
+    const getPlatformDisplay = (platform: string) => {
+        const provider = customProviders.find(p => p.id === platform);
+        return provider ? provider.name : platform;
+    };
 
     const setPlatform = (val: string) => {
         if (props.answering()) {
@@ -56,7 +62,7 @@ export default function (props: Props) {
                     <For each={platforms}>
                         {
                             x => <option value={x} selected={x === config().codeModel.platform}>
-                                {x}
+                                {getPlatformDisplay(x)}
                             </option>
                         }
                     </For>

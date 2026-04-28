@@ -96,6 +96,8 @@ export class AgentViewProvider implements vscode.WebviewViewProvider {
                 models: ${JSON.stringify(this.config.models)},
                 config: ${JSON.stringify(config)},
                 workspace: '${workspace || ''}',
+                customProviders: ${JSON.stringify(this.config.customProviders)},
+                baseUrls: ${JSON.stringify({})},
             }
             window.I18nUtils = {
                 messages: ${JSON.stringify(I18nUtils.messages)},

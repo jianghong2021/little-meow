@@ -1,11 +1,13 @@
 export class OpenAiModel implements AiCommModel {
     private API_URL = '';
     private API_TOKEN = '';
+    private defaultModel = '';
     public MAX_CONTEXT_SIZE = 127 * 1024 * 0.85;
 
-    constructor(token: string, baseUrl: string) {
+    constructor(token: string, baseUrl: string, model?: string) {
         this.API_TOKEN = token;
         this.API_URL = baseUrl.replace(/\/+$/, '');
+        this.defaultModel = model || 'gpt-4o-mini';
     }
 
     public async request(model: string, prompt: string, snippet = '', memory: GeneralMessage[] = []): Promise<string> {
@@ -130,7 +132,7 @@ export class OpenAiModel implements AiCommModel {
                 'Authorization': 'Bearer ' + this.API_TOKEN
             },
             body: JSON.stringify({
-                "model": "gpt-4o-mini",
+                "model": this.defaultModel,
                 "temperature": 0.0,
                 "max_tokens": 8192,
                 "messages": [
@@ -171,7 +173,7 @@ export class OpenAiModel implements AiCommModel {
     }
 
     async code(prompt: string) {
-        return this.getCode(prompt, 'gpt-4o-mini');
+        return this.getCode(prompt, this.defaultModel);
     }
 
     async sseChat(model: string, prompt: string, snippet?: string, memory?: GeneralMessage[], thinking = false, onMsg?: (msg: SseGeneralMessage) => void) {

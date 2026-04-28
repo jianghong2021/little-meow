@@ -5,6 +5,7 @@ export default function (props: {
 }) {
     const [models, setModels] = createSignal<ChatModel[]>(window.initConfig.models || []);
     const platforms = window.initConfig.platforms as ModePlatform[];
+    const customProviders: CustomProvider[] = window.initConfig.customProviders || [];
     const abilities: ModeAbility[] = ['text', 'image', 'video'];
 
     const [showAdd, setShowAdd] = createSignal(false);
@@ -14,6 +15,11 @@ export default function (props: {
     const [newAbility, setNewAbility] = createSignal<ModeAbility>("text");
 
     const [confirmDelete, setConfirmDelete] = createSignal<{ index: number, label: string } | null>(null);
+
+    const getPlatformDisplay = (platform: ModePlatform) => {
+        const provider = customProviders.find(p => p.id === platform);
+        return provider ? provider.name : platform;
+    };
 
     const saveToServer = (newModels: ChatModel[]) => {
         setModels(newModels);
@@ -85,7 +91,7 @@ export default function (props: {
                                 <label style={{ "font-size": "12px", "opacity": "0.8" }}>
                                     {I18nUtils.t('chat.models.platform', 'Platform')}</label>
                                 <select class="model-form-select" value={newPlatform()} onInput={(e) => setNewPlatform(e.currentTarget.value as ModePlatform)}>
-                                    <For each={platforms}>{(p) => <option value={p}>{p}</option>}</For>
+                                    <For each={platforms}>{(p) => <option value={p}>{getPlatformDisplay(p)}</option>}</For>
                                 </select>
                             </div>
                             <div class="token-input-group">
@@ -122,7 +128,7 @@ export default function (props: {
                                         <div class="model-info">
                                             <div class="model-name">{model.name}</div>
                                             <div class="model-meta">
-                                                <span class="model-tag">{model.platform}</span>
+                                                <span class="model-tag">{getPlatformDisplay(model.platform)}</span>
                                                 <span class="model-tag">{model.ability}</span>
                                                 <span class="model-tag">{model.label}</span>
                                             </div>
